@@ -6,17 +6,17 @@ node_modules
 # ===========================================
 # Environment & Configuration
 # ===========================================
-.env          # Environment variables
-.claude       # Claude AI configuration
+.env
+.claude
 
 # ===========================================
 # Documentation & References
 # ===========================================
-docs          # Documentation files
-presentations # Output files
-references    # Reference materials
-sample        # Sample files directory
-CLAUDE_JP.md  # Claude Japanese documentation
+docs
+presentations
+references
+sample
+CLAUDE_JP.md
 
 # ===========================================
 # Media Files
