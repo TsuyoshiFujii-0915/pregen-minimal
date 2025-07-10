@@ -1,0 +1,8 @@
+type: "image-text-vertical"
+style: "white"
+title:
+  visible: true
+  text: "Vertical Layout"
+content:
+  image: "assets/sample.jpg"
+  text: "This vertical layout places the image at the top portion of the slide, occupying the space from 15% to 40% from the bottom. The text content appears below in the remaining space, creating a balanced vertical composition that works well for showcasing both visual and descriptive content."

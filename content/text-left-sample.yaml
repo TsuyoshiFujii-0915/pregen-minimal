@@ -1,0 +1,7 @@
+type: "text-left"
+style: "white"
+title:
+  visible: true
+  text: "Text Left Layout"
+content:
+  text: "This is a text-left layout example. The text is aligned to the left side of the screen with fade-in animation. This layout is perfect for presenting key points or statements that need emphasis."

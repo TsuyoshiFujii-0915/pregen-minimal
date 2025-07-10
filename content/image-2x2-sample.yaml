@@ -1,0 +1,10 @@
+type: "image-2x2"
+style: "white"
+title:
+  visible: true
+  text: "Four Images in Grid"
+content:
+  image1: "assets/sample.jpg"
+  image2: "assets/sample.jpg"
+  image3: "assets/sample.jpg"
+  image4: "assets/sample.jpg"

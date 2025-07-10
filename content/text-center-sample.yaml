@@ -1,0 +1,7 @@
+type: "text-center"
+style: "black"
+title:
+  visible: true
+  text: "Centered Text"
+content:
+  text: "This is a centered text layout on a black background. Perfect for impactful statements, quotes, or key messages that need to be the focal point of the presentation."

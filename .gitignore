@@ -1,0 +1,34 @@
+# ===========================================
+# Dependencies & Build
+# ===========================================
+node_modules
+
+# ===========================================
+# Environment & Configuration
+# ===========================================
+.env          # Environment variables
+.claude       # Claude AI configuration
+
+# ===========================================
+# Documentation & References
+# ===========================================
+docs          # Documentation files
+presentations # Output files
+references    # Reference materials
+sample        # Sample files directory
+CLAUDE_JP.md  # Claude Japanese documentation
+
+# ===========================================
+# Media Files
+# ===========================================
+# Image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.svg
+*.webp
+*.ico
+*.tiff
+*.tif

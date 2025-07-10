@@ -1,0 +1,16 @@
+type: "card-3"
+style: "white"
+title:
+  visible: true
+  text: "Product Features"
+content:
+  cards:
+    - image: "assets/sample.jpg"
+      title: "Performance"
+      description: "Lightning-fast load times with optimized code and efficient asset management for the best user experience."
+    - image: "assets/sample.jpg"
+      title: "Security"
+      description: "Enterprise-grade security measures to protect your data with encryption and secure authentication systems."
+    - image: "assets/sample.jpg"
+      title: "Scalability"
+      description: "Built to grow with your business, handling increased traffic and expanding functionality seamlessly."

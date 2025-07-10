@@ -1,0 +1,25 @@
+{
+  "name": "pregen-minimal",
+  "version": "1.0.0",
+  "main": "build.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "preview": "node -e \"const http = require('http'); const fs = require('fs'); const path = require('path'); const server = http.createServer((req, res) => { const filePath = path.join(__dirname, 'presentations', req.url.slice(1) || 'index.html'); const ext = path.extname(filePath); const contentType = ext === '.html' ? 'text/html' : ext === '.css' ? 'text/css' : ext === '.js' ? 'text/javascript' : 'text/plain'; fs.readFile(filePath, (err, data) => { if (err) { res.writeHead(404); res.end('Not Found'); } else { res.writeHead(200, { 'Content-Type': contentType }); res.end(data); } }); }); server.listen(3000, () => console.log('Preview server running at http://localhost:3000'));\""
+  },
+  "keywords": [
+    "presentation",
+    "yaml",
+    "html",
+    "generator"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "A system that automatically generates beautiful, modern designer website-style presentations with smooth animations from YAML input files",
+  "dependencies": {
+    "fs-extra": "^11.3.0",
+    "js-yaml": "^4.1.0"
+  }
+}

@@ -1,0 +1,25 @@
+type: "timeline"
+style: "white"
+title:
+  visible: true
+  text: "Project Development Timeline"
+content:
+  events:
+    - time: "Q1 2024"
+      title: "Project Planning"
+      description: "Initial requirements gathering, technical specifications, and team formation. Defining project scope and deliverables."
+    - time: "Q2 2024"
+      title: "Design Phase"
+      description: "UI/UX design, system architecture planning, and creating visual mockups. User research and prototyping."
+    - time: "Q3 2024"
+      title: "Development"
+      description: "Core development phase with iterative development cycles. Implementation of key features and functionalities."
+    - time: "Q4 2024"
+      title: "Testing & QA"
+      description: "Comprehensive testing, bug fixes, performance optimization, and quality assurance processes."
+    - time: "Q1 2025"
+      title: "Launch"
+      description: "Production deployment, user training, and go-live activities. Monitoring and initial user feedback collection."
+    - time: "Q2 2025"
+      title: "Enhancement"
+      description: "Post-launch improvements, feature additions based on user feedback, and system optimization."
