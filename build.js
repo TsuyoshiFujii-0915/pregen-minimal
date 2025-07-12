@@ -2086,7 +2086,8 @@ class ScrollSnapNavigator {
                 
             case 'image-full':
             case 'image-1':
-                // No specific animations for single images
+                // Ensure images are visible (no animations, just show)
+                this.showStaticImages(slide);
                 break;
                 
             case 'image-horizontal-2':
@@ -2146,6 +2147,19 @@ class ScrollSnapNavigator {
         }
     }
     
+    showStaticImages(slide) {
+        const images = slide.querySelectorAll('img');
+        console.log(\`Found \${images.length} static images to show:\`, images);
+        
+        images.forEach((img, index) => {
+            console.log(\`Making static image \${index + 1} visible\`);
+            img.style.transition = 'none';
+            img.style.opacity = '1';
+            img.style.transform = 'none';
+            console.log(\`Static image \${index + 1} shown\`);
+        });
+    }
+    
     animateImageSequence(slide, direction) {
         const images = slide.querySelectorAll('img');
         images.forEach((img, index) => {
@@ -2176,21 +2190,32 @@ class ScrollSnapNavigator {
     
     animateImageTextLayout(slide) {
         const image = slide.querySelector('img');
-        const textContent = slide.querySelector('.content');
+        const textContent = slide.querySelector('.text-content');
         
         if (image) {
             image.style.opacity = '1'; // Image appears immediately
         }
         
         if (textContent) {
+            console.log('🎯 Found image-text content element for animation:', textContent);
+            
+            // Reset to initial state first
+            textContent.style.transition = 'none';
             textContent.style.opacity = '0';
-            textContent.style.transform = 'translateY(20px)';
+            textContent.style.setProperty('transform', 'translateY(20px)', 'important');
+            
+            // Force reflow
+            textContent.offsetHeight;
             
             setTimeout(() => {
+                console.log('🎯 Starting image-text content animation');
                 textContent.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
                 textContent.style.opacity = '1';
-                textContent.style.transform = 'translateY(0)';
+                textContent.style.setProperty('transform', 'translateY(0)', 'important');
+                console.log('✅ Image-text content animation applied');
             }, 300);
+        } else {
+            console.warn('⚠️ No .text-content element found in image-text slide:', slide.innerHTML.substring(0, 200));
         }
     }
     
