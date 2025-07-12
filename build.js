@@ -50,7 +50,7 @@ class PreGenBuilder {
   }
 
   /**
-   * Parse YAML content supporting both multi-slide and legacy single-slide formats
+   * Parse YAML content for multi-slide presentations
    * @param {string} yamlContent - Raw YAML content
    * @returns {Object} Normalized presentation data with metadata and slides array
    */
@@ -62,46 +62,19 @@ class PreGenBuilder {
         throw new Error('Invalid YAML: Expected object structure');
       }
       
-      // Check if this is new multi-slide format
-      if (data.slides && Array.isArray(data.slides)) {
-        // New multi-slide format
-        return {
-          type: 'multi-slide',
-          presentation: {
-            title: data.presentation?.title || 'Untitled Presentation',
-            author: data.presentation?.author || '',
-            date: data.presentation?.date || '',
-            theme: data.presentation?.theme || 'default',
-            settings: {
-              autoplay: data.presentation?.settings?.autoplay || false,
-              loop: data.presentation?.settings?.loop || false,
-              transition_duration: data.presentation?.settings?.transition_duration || 600,
-              show_progress: data.presentation?.settings?.show_progress !== false
-            }
-          },
-          slides: data.slides
-        };
-      } else if (data.type) {
-        // Legacy single-slide format - convert to multi-slide structure
-        return {
-          type: 'single-slide-legacy',
-          presentation: {
-            title: data.title?.text || 'Untitled Presentation',
-            author: data.content?.author?.text || '',
-            date: data.content?.date?.text || '',
-            theme: 'default',
-            settings: {
-              autoplay: false,
-              loop: false,
-              transition_duration: 600,
-              show_progress: true
-            }
-          },
-          slides: [data] // Wrap single slide in array
-        };
-      } else {
-        throw new Error('Invalid YAML structure: Missing required "type" field or "slides" array');
+      // Expect multi-slide format only
+      if (!data.slides || !Array.isArray(data.slides)) {
+        throw new Error('Invalid YAML structure: Missing required "slides" array');
       }
+      
+      return {
+        presentation: {
+          title: data.title || 'Untitled Presentation',
+          author: data.author || '',
+          date: data.date || ''
+        },
+        slides: data.slides
+      };
       
     } catch (error) {
       if (error.name === 'YAMLException') {
@@ -153,7 +126,7 @@ class PreGenBuilder {
       }
     });
 
-    console.log(`✅ Validated ${presentationData.type} with ${presentationData.slides.length} slide(s)`);
+    console.log(`✅ Validated multi-slide presentation with ${presentationData.slides.length} slide(s)`);
   }
 
   async processYamlFile(yamlFilePath) {
@@ -256,19 +229,6 @@ class PreGenBuilder {
     }
   }
 
-  // Legacy single-slide asset management (kept for backward compatibility)
-  async copyAssets(slideData, assetsDir) {
-    // Copy sample image by default
-    const sampleImageSource = path.join(this.sampleDir, 'images', 'sample_image.jpg');
-    const sampleImageDest = path.join(assetsDir, 'sample.jpg');
-    
-    if (await fs.pathExists(sampleImageSource)) {
-      await fs.copy(sampleImageSource, sampleImageDest);
-    }
-    
-    // TODO: Add logic to copy custom images specified in YAML
-    // This would scan the slideData for image references and copy them
-  }
 
   /**
    * Generate HTML for multi-slide presentation
@@ -294,7 +254,6 @@ class PreGenBuilder {
 <body>
     <div id="presentation-container" class="presentation-container">
         ${this.generateAllSlidesContent(presentationData)}
-        ${this.generatePresentationUI(presentationData)}
     </div>
     <script>
         ${js}
@@ -320,61 +279,7 @@ class PreGenBuilder {
     return `<div class="slides-scroll-container">${slidesHTML}</div>`;
   }
 
-  /**
-   * Generate presentation UI elements (progress bar, slide counter, navigation hints)
-   * @param {Object} presentationData - Normalized presentation data
-   * @returns {string} HTML for presentation UI
-   */
-  generatePresentationUI(presentationData) {
-    if (!presentationData.presentation.settings.show_progress) {
-      return '';
-    }
 
-    const totalSlides = presentationData.slides.length;
-    
-    return `
-      <div class="presentation-ui">
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${100 / totalSlides}%"></div>
-        </div>
-        <div class="slide-counter">
-          <span class="current-slide">1</span>
-          <span class="slide-separator">/</span>
-          <span class="total-slides">${totalSlides}</span>
-        </div>
-        <div class="navigation-hints">
-          <span class="nav-hint">↑ ↓ Scroll or Arrow keys to navigate</span>
-          <span class="nav-hint-secondary">F11 for fullscreen</span>
-        </div>
-      </div>
-    `;
-  }
-
-  // Legacy single-slide HTML generation (kept for backward compatibility)
-  async generateHTML(slideData) {
-    const css = await this.generateCSS(slideData);
-    const js = await this.generateJS(slideData);
-    
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${slideData.title?.text || 'PreGen Presentation'}</title>
-    <style>
-        ${css}
-    </style>
-</head>
-<body>
-    <div id="presentation">
-        ${this.generateSlideContent(slideData)}
-    </div>
-    <script>
-        ${js}
-    </script>
-</body>
-</html>`;
-  }
 
   generateSlideContent(slideData) {
     const layoutType = slideData.type;
@@ -1604,105 +1509,7 @@ html, body {
     font-style: italic;
 }
 
-/* Animations */
-.fade-in {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-out 0.5s forwards;
-}
-
-.fade-in-left {
-    opacity: 0;
-    animation: fadeInLeft 0.8s ease-out 0.5s forwards;
-}
-
-.fade-in-right {
-    opacity: 0;
-    animation: fadeInRight 0.8s ease-out 0.8s forwards;
-}
-
-.fade-in-1 {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-out 0.5s forwards;
-}
-
-.fade-in-2 {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-out 0.8s forwards;
-}
-
-.fade-in-3 {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-out 1.1s forwards;
-}
-
-.fade-in-4 {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-out 1.4s forwards;
-}
-
-.fade-in-after {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-out 1.0s forwards;
-}
-
-.fade-in-card-1 {
-    opacity: 0;
-    animation: fadeInUp 0.8s ease-out 0.5s forwards;
-}
-
-.fade-in-card-2 {
-    opacity: 0;
-    animation: fadeInUp 0.8s ease-out 0.8s forwards;
-}
-
-.fade-in-card-3 {
-    opacity: 0;
-    animation: fadeInUp 0.8s ease-out 1.1s forwards;
-}
-
-.fade-in-timeline {
-    opacity: 0;
-    animation: fadeInUp 0.8s ease-out forwards;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes fadeInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes fadeInRight {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+/* Animations handled by JavaScript Intersection Observer */
 
 /* Responsive Design */
 @media (max-width: 1024px) {
@@ -1901,187 +1708,7 @@ html, body {
     }
 }
 
-/* Parallax Background System */
-.slide-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.slide-container::before {
-    content: '';
-    position: absolute;
-    top: -10%;
-    left: -10%;
-    right: -10%;
-    bottom: -10%;
-    background: inherit;
-    z-index: -1;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.slide-container.parallax-left::before {
-    transform: translateX(-5%);
-}
-
-.slide-container.parallax-right::before {
-    transform: translateX(5%);
-}
-
-.slide-container.parallax-up::before {
-    transform: translateY(-5%);
-}
-
-.slide-container.parallax-down::before {
-    transform: translateY(5%);
-}
-
-/* Slide Transition Effects */
-.slide-transition {
-    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.slide-transition.fade-out {
-    opacity: 0;
-    transform: scale(0.95);
-}
-
-.slide-transition.push-left {
-    transform: translateX(-100%);
-}
-
-.slide-transition.push-right {
-    transform: translateX(100%);
-}
-
-.slide-transition.push-up {
-    transform: translateY(-100%);
-}
-
-.slide-transition.push-down {
-    transform: translateY(100%);
-}
-
-/* Enhanced Animation Keyframes */
-@keyframes parallaxSlideLeft {
-    from {
-        transform: translateX(100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes parallaxSlideRight {
-    from {
-        transform: translateX(-100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes parallaxSlideUp {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-
-@keyframes parallaxSlideDown {
-    from {
-        transform: translateY(-100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInWithScale {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Transition-specific Layout Animations */
-.title-slide.slide-enter {
-    animation: fadeInWithScale 0.8s ease-out forwards;
-}
-
-.section-break.slide-enter {
-    animation: parallaxSlideLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.text-left.slide-enter,
-.text-center.slide-enter,
-.list.slide-enter,
-.num-list.slide-enter,
-.card-2.slide-enter,
-.card-3.slide-enter,
-.timeline.slide-enter {
-    animation: parallaxSlideUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.image-text-horizontal.slide-enter {
-    animation: parallaxSlideRight 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.image-full.slide-enter,
-.image-single.slide-enter,
-.image-horizontal-2.slide-enter,
-.image-2x2.slide-enter,
-.image-text-vertical.slide-enter {
-    animation: fadeInWithScale 0.8s ease-out forwards;
-}
-
-/* Background Pattern Animations */
-.slide-container.black::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02) 1px, transparent 1px),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.01) 50%, transparent 70%);
-    background-size: 100px 100px, 120px 120px, 200px 200px;
-    z-index: 0;
-    opacity: 0;
-    animation: patternFadeIn 2s ease-out 0.5s forwards;
-    pointer-events: none;
-}
-
-.slide-container.white::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 25% 25%, rgba(0,0,0,0.01) 1px, transparent 1px),
-        radial-gradient(circle at 75% 75%, rgba(0,0,0,0.01) 1px, transparent 1px),
-        linear-gradient(-45deg, transparent 30%, rgba(0,0,0,0.005) 50%, transparent 70%);
-    background-size: 80px 80px, 100px 100px, 150px 150px;
-    z-index: 0;
-    opacity: 0;
-    animation: patternFadeIn 2s ease-out 0.5s forwards;
-    pointer-events: none;
-}
-
-@keyframes patternFadeIn {
-    to {
-        opacity: 1;
-    }
-}
+/* Removed legacy parallax and transition effects - incompatible with scroll-snap */
 
 /* Content Layer Z-Index Management */
 .content,
@@ -2093,380 +1720,9 @@ html, body {
 `;
   }
 
-  async generateJS(slideData) {
-    const isTimeline = slideData.type === 'timeline';
-    
-    return `
-// PreGen-Minimal JavaScript
-console.log('PreGen-Minimal presentation loaded');
+  // Removed legacy generateJS() method - incompatible with scroll-snap concept
 
-// Slide Navigation System
-class SlideNavigator {
-    constructor() {
-        this.currentSlide = 0;
-        this.slides = [];
-        this.isTransitioning = false;
-        this.animations = [];
-        this.init();
-    }
-    
-    init() {
-        this.setupKeyboardNavigation();
-        this.setupAnimationSequencing();
-        this.setupResponsiveHandling();
-        
-        // Get all slide information from presentations directory
-        this.loadSlideMetadata();
-        
-        console.log('Slide Navigator initialized');
-    }
-    
-    setupKeyboardNavigation() {
-        document.addEventListener('keydown', (e) => {
-            if (this.isTransitioning) return;
-            
-            switch(e.key) {
-                case 'ArrowRight':
-                case 'Space':
-                case 'PageDown':
-                    e.preventDefault();
-                    this.nextSlide();
-                    break;
-                    
-                case 'ArrowLeft':
-                case 'PageUp':
-                    e.preventDefault();
-                    this.previousSlide();
-                    break;
-                    
-                case 'Home':
-                    e.preventDefault();
-                    this.goToSlide(0);
-                    break;
-                    
-                case 'End':
-                    e.preventDefault();
-                    this.goToSlide(this.slides.length - 1);
-                    break;
-                    
-                case 'F11':
-                case 'f':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        this.toggleFullscreen();
-                    }
-                    break;
-                    
-                case 'Escape':
-                    if (document.fullscreenElement) {
-                        document.exitFullscreen();
-                    }
-                    break;
-            }
-        });
-    }
-    
-    setupAnimationSequencing() {
-        // Control animation timing and sequencing
-        this.animationController = {
-            fadeIn: (element, delay = 0) => {
-                setTimeout(() => {
-                    element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
-                }, delay);
-            },
-            
-            sequentialFadeIn: (elements, interval = 200) => {
-                elements.forEach((element, index) => {
-                    this.animationController.fadeIn(element, index * interval);
-                });
-            },
-            
-            resetAnimations: () => {
-                const animatedElements = document.querySelectorAll('.fade-in, .fade-in-left, .fade-in-right, .fade-in-up');
-                animatedElements.forEach(element => {
-                    element.style.opacity = '0';
-                    element.style.transform = '';
-                });
-            }
-        };
-    }
-    
-    setupResponsiveHandling() {
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                this.handleResize();
-            }, 250);
-        });
-    }
-    
-    handleResize() {
-        // Responsive scaling and layout adjustments
-        const viewport = {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            ratio: window.innerWidth / window.innerHeight
-        };
-        
-        // Apply responsive scaling if needed
-        const container = document.querySelector('.slide-container, .presentation-container');
-        if (container) {
-            // Landscape orientation check
-            if (viewport.ratio < 1.2) {
-                console.warn('Consider using landscape orientation for optimal experience');
-            }
-            
-            // Font scaling based on viewport
-            const baseSize = Math.min(viewport.width / 100, viewport.height / 60);
-            document.documentElement.style.fontSize = baseSize + 'px';
-        }
-    }
-    
-    loadSlideMetadata() {
-        // In a real implementation, this would load slide information
-        // For now, we'll work with single slide presentations
-        this.slides = [window.location.pathname];
-        console.log('Loaded slides:', this.slides);
-    }
-    
-    nextSlide() {
-        if (this.currentSlide < this.slides.length - 1) {
-            this.goToSlide(this.currentSlide + 1);
-        } else {
-            console.log('Last slide reached');
-        }
-    }
-    
-    previousSlide() {
-        if (this.currentSlide > 0) {
-            this.goToSlide(this.currentSlide - 1);
-        } else {
-            console.log('First slide reached');
-        }
-    }
-    
-    goToSlide(slideIndex) {
-        if (slideIndex === this.currentSlide) return;
-        
-        this.isTransitioning = true;
-        const direction = slideIndex > this.currentSlide ? 'forward' : 'backward';
-        const previousSlide = this.currentSlide;
-        this.currentSlide = slideIndex;
-        
-        // Trigger parallax and transition effects
-        this.triggerTransitionEffects(direction, previousSlide);
-        
-        setTimeout(() => {
-            this.isTransitioning = false;
-        }, 1000);
-    }
-    
-    triggerTransitionEffects(direction, previousSlide) {
-        const container = document.querySelector('.slide-container');
-        if (!container) return;
-        
-        // Get layout type to determine transition style
-        const layoutType = this.getLayoutType(container);
-        
-        // Apply parallax background effect
-        this.applyParallaxEffect(container, direction, layoutType);
-        
-        // Apply slide transition
-        this.applySlideTransition(container, direction, layoutType);
-        
-        // Trigger content animations after transition
-        setTimeout(() => {
-            this.triggerSlideAnimations();
-        }, 300);
-    }
-    
-    getLayoutType(container) {
-        const classList = container.classList;
-        if (classList.contains('title-slide')) return 'title-slide';
-        if (classList.contains('section-break')) return 'section-break';
-        if (classList.contains('text-left')) return 'text-left';
-        if (classList.contains('text-center')) return 'text-center';
-        if (classList.contains('image-full')) return 'image-full';
-        if (classList.contains('image-1')) return 'image-single';
-        if (classList.contains('image-horizontal-2')) return 'image-horizontal-2';
-        if (classList.contains('image-2x2')) return 'image-2x2';
-        if (classList.contains('image-text-horizontal')) return 'image-text-horizontal';
-        if (classList.contains('image-text-vertical')) return 'image-text-vertical';
-        if (classList.contains('list')) return 'list';
-        if (classList.contains('num-list')) return 'num-list';
-        if (classList.contains('card-2')) return 'card-2';
-        if (classList.contains('card-3')) return 'card-3';
-        if (classList.contains('timeline')) return 'timeline';
-        return 'default';
-    }
-    
-    applyParallaxEffect(container, direction, layoutType) {
-        // Clear previous parallax classes
-        container.classList.remove('parallax-left', 'parallax-right', 'parallax-up', 'parallax-down');
-        
-        // Apply appropriate parallax effect based on layout and direction
-        const parallaxMap = {
-            'section-break': direction === 'forward' ? 'parallax-right' : 'parallax-left',
-            'text-left': direction === 'forward' ? 'parallax-up' : 'parallax-down',
-            'text-center': direction === 'forward' ? 'parallax-up' : 'parallax-down',
-            'list': direction === 'forward' ? 'parallax-up' : 'parallax-down',
-            'num-list': direction === 'forward' ? 'parallax-up' : 'parallax-down',
-            'card-2': direction === 'forward' ? 'parallax-up' : 'parallax-down',
-            'card-3': direction === 'forward' ? 'parallax-up' : 'parallax-down',
-            'timeline': direction === 'forward' ? 'parallax-up' : 'parallax-down',
-            'image-text-horizontal': direction === 'forward' ? 'parallax-left' : 'parallax-right',
-            'default': direction === 'forward' ? 'parallax-up' : 'parallax-down'
-        };
-        
-        const parallaxClass = parallaxMap[layoutType] || parallaxMap['default'];
-        container.classList.add(parallaxClass);
-        
-        // Remove parallax effect after animation
-        setTimeout(() => {
-            container.classList.remove(parallaxClass);
-        }, 600);
-    }
-    
-    applySlideTransition(container, direction, layoutType) {
-        // Add slide-enter class for layout-specific animations
-        container.classList.remove('slide-enter');
-        
-        // Force reflow to ensure class removal takes effect
-        container.offsetHeight;
-        
-        // Add slide-enter class to trigger transition animations
-        setTimeout(() => {
-            container.classList.add('slide-enter');
-        }, 50);
-        
-        // Remove slide-enter class after animation completes
-        setTimeout(() => {
-            container.classList.remove('slide-enter');
-        }, 1000);
-    }
-    
-    triggerPushTransition(container, direction) {
-        const pushClass = {
-            'forward': 'push-left',
-            'backward': 'push-right'
-        }[direction] || 'push-left';
-        
-        container.classList.add('slide-transition', pushClass);
-        
-        setTimeout(() => {
-            container.classList.remove('slide-transition', pushClass);
-        }, 600);
-    }
-    
-    triggerFadeTransition(container) {
-        container.classList.add('slide-transition', 'fade-out');
-        
-        setTimeout(() => {
-            container.classList.remove('slide-transition', 'fade-out');
-        }, 300);
-        
-        setTimeout(() => {
-            container.style.opacity = '1';
-            container.style.transform = 'scale(1)';
-        }, 350);
-    }
-    
-    triggerSlideAnimations() {
-        // Reset and restart animations
-        this.animationController.resetAnimations();
-        
-        setTimeout(() => {
-            const fadeElements = document.querySelectorAll('.fade-in');
-            const leftElements = document.querySelectorAll('.fade-in-left');
-            const rightElements = document.querySelectorAll('.fade-in-right');
-            const upElements = document.querySelectorAll('.fade-in-up');
-            
-            // Trigger animations with proper timing
-            this.animationController.sequentialFadeIn([...fadeElements], 200);
-            this.animationController.sequentialFadeIn([...leftElements], 300);
-            this.animationController.sequentialFadeIn([...rightElements], 300);
-            this.animationController.sequentialFadeIn([...upElements], 250);
-        }, 100);
-    }
-    
-    toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                console.log('Fullscreen request failed:', err);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    }
-}
-
-// Initialize presentation
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Presentation initialized');
-    
-    // Initialize slide navigator
-    const navigator = new SlideNavigator();
-    
-    ${isTimeline ? this.generateTimelineJS() : ''}
-    
-    // Trigger initial animations
-    setTimeout(() => {
-        navigator.triggerSlideAnimations();
-    }, 500);
-});
-`;
-  }
-
-  generateTimelineJS() {
-    return `
-    // Timeline-specific JavaScript
-    const timelineWrapper = document.querySelector('.timeline-wrapper');
-    const timelineItems = document.querySelectorAll('.timeline-item');
-    let currentIndex = 0;
-    
-    if (timelineWrapper && timelineItems.length > 0) {
-        console.log('Timeline initialized with', timelineItems.length, 'items');
-        
-        function scrollToItem(index) {
-            if (index >= 0 && index < timelineItems.length) {
-                const item = timelineItems[index];
-                const itemRect = item.getBoundingClientRect();
-                const wrapperRect = timelineWrapper.getBoundingClientRect();
-                const scrollLeft = timelineWrapper.scrollLeft + itemRect.left - wrapperRect.left - (wrapperRect.width / 2) + (itemRect.width / 2);
-                
-                timelineWrapper.scrollTo({
-                    left: scrollLeft,
-                    behavior: 'smooth'
-                });
-                
-                currentIndex = index;
-                console.log('Scrolled to timeline item', index);
-            }
-        }
-        
-        // Keyboard navigation for timeline
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                scrollToItem(currentIndex - 1);
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                scrollToItem(currentIndex + 1);
-            } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
-                // Continue to next slide (this would be handled by slide navigation system)
-                console.log('Continue to next slide requested');
-            }
-        });
-        
-        // Initialize scroll position to first item
-        setTimeout(() => {
-            scrollToItem(0);
-        }, 1000);
-    }
-    `;
-  }
+  // Removed generateTimelineJS() method - timeline navigation integrated into ScrollSnapNavigator
 
   /**
    * Generate CSS for multi-slide presentation (extends existing CSS with slide management)
@@ -2516,179 +1772,9 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 }
 
-/* Presentation UI */
-.presentation-ui {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    z-index: 100;
-    pointer-events: none;
-}
+/* Removed legacy presentation UI and parallax effects - not needed with scroll-snap */
 
-.progress-bar {
-    width: 200px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: rgba(255, 255, 255, 0.8);
-    transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    border-radius: 2px;
-}
-
-.slide-counter {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 500;
-    min-width: 50px;
-    text-align: center;
-}
-
-.navigation-hints {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.2rem;
-}
-
-.nav-hint {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.6);
-    font-style: italic;
-}
-
-.nav-hint-secondary {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.4);
-    font-style: italic;
-}
-
-/* Dark theme adjustments for UI */
-.slide-wrapper.active .slide-container.black ~ .presentation-ui .progress-bar {
-    background: rgba(0, 0, 0, 0.3);
-}
-
-.slide-wrapper.active .slide-container.black ~ .presentation-ui .progress-fill {
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.slide-wrapper.active .slide-container.black ~ .presentation-ui .slide-counter {
-    color: rgba(0, 0, 0, 0.8);
-}
-
-.slide-wrapper.active .slide-container.black ~ .presentation-ui .nav-hint {
-    color: rgba(0, 0, 0, 0.6);
-}
-
-.slide-wrapper.active .slide-container.black ~ .presentation-ui .nav-hint-secondary {
-    color: rgba(0, 0, 0, 0.4);
-}
-
-/* Responsive UI adjustments */
-@media (max-width: 1024px) {
-    .presentation-ui {
-        bottom: 1rem;
-        gap: 1.5rem;
-    }
-    
-    .progress-bar {
-        width: 150px;
-        height: 3px;
-    }
-    
-    .slide-counter {
-        font-size: 0.8rem;
-    }
-    
-    .nav-hint {
-        font-size: 0.7rem;
-    }
-    
-    .nav-hint-secondary {
-        font-size: 0.6rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .presentation-ui {
-        gap: 1rem;
-    }
-    
-    .progress-bar {
-        width: 100px;
-    }
-    
-    .navigation-hints {
-        display: none;
-    }
-}
-
-/* Parallax effects for layout-specific transitions - requirements.md spec */
-.slide-container.parallax-active {
-    position: relative;
-    overflow: hidden;
-}
-
-.slide-container.parallax-active::before {
-    content: '';
-    position: absolute;
-    top: -15%;
-    left: -15%;
-    right: -15%;
-    bottom: -15%;
-    background: inherit;
-    z-index: -1;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Parallax effects for outgoing slides (being pushed out) */
-.slide-container.parallax-left-right-from.parallax-moving::before {
-    transform: translateX(-150%); /* Background moves faster than slide */
-}
-
-.slide-container.parallax-right-left-from.parallax-moving::before {
-    transform: translateX(150%); /* Background moves faster than slide */
-}
-
-.slide-container.parallax-bottom-top-from.parallax-moving::before {
-    transform: translateY(-150%); /* Background moves faster than slide */
-}
-
-/* Parallax effects for incoming slides (entering) */
-.slide-container.parallax-left-right-to.parallax-moving::before {
-    transform: translateX(0%) scale(1.1); /* Background settles with slight scale */
-}
-
-.slide-container.parallax-right-left-to.parallax-moving::before {
-    transform: translateX(0%) scale(1.1); /* Background settles with slight scale */
-}
-
-.slide-container.parallax-bottom-top-to.parallax-moving::before {
-    transform: translateY(0%) scale(1.1); /* Background settles with slight scale */
-}
-
-/* Initial parallax positions for incoming slides */
-.slide-container.parallax-left-right-to::before {
-    transform: translateX(120%); /* Start off-screen faster than slide */
-}
-
-.slide-container.parallax-right-left-to::before {
-    transform: translateX(-120%); /* Start off-screen faster than slide */
-}
-
-.slide-container.parallax-bottom-top-to::before {
-    transform: translateY(120%); /* Start off-screen faster than slide */
-}
-
-/* Slide wrapper base styles - transitions handled by JavaScript */
+/* Essential slide wrapper styles for scroll-snap */
 .slide-wrapper {
     will-change: transform;
 }
@@ -2697,9 +1783,7 @@ document.addEventListener('DOMContentLoaded', function() {
     will-change: transform;
 }
 
-/* Initial states for animations - Managed by JavaScript Intersection Observer */
-
-/* Animation transforms - Managed by JavaScript Intersection Observer */
+/* Animation states - Managed by JavaScript Intersection Observer */
 `;
 
     return baseCss + multiSlideCss;
@@ -2720,10 +1804,6 @@ console.log('PreGen-Minimal multi-slide presentation loaded');
 // Presentation configuration
 const PRESENTATION_CONFIG = {
     totalSlides: ${presentationData.slides.length},
-    autoplay: ${presentationData.presentation.settings.autoplay},
-    loop: ${presentationData.presentation.settings.loop},
-    transitionDuration: ${presentationData.presentation.settings.transition_duration},
-    showProgress: ${presentationData.presentation.settings.show_progress},
     slides: ${JSON.stringify(presentationData.slides.map(slide => ({ type: slide.type, style: slide.style || 'white' })))}
 };
 
@@ -2745,7 +1825,6 @@ class ScrollSnapNavigator {
         this.setupKeyboardNavigation();
         this.setupResponsiveHandling();
         this.setupAnimationObserver();
-        this.updateProgress();
         
         console.log(\`Scroll-snap navigator initialized with \${this.config.totalSlides} slides\`);
     }
@@ -2771,7 +1850,6 @@ class ScrollSnapNavigator {
         
         if (newSlide !== this.currentSlide && newSlide >= 0 && newSlide < this.config.totalSlides) {
             this.currentSlide = newSlide;
-            this.updateProgress();
         }
     }
     
@@ -2844,12 +1922,6 @@ class ScrollSnapNavigator {
                 case 'Escape':
                     if (document.fullscreenElement) {
                         document.exitFullscreen();
-                    }
-                    break;
-                    
-                case 'p':
-                    if (this.config.autoplay) {
-                        this.toggleAutoplay();
                     }
                     break;
             }
@@ -3050,23 +2122,27 @@ class ScrollSnapNavigator {
     }
     
     animateTextContent(slide) {
-        const content = slide.querySelector('.content');
-        if (content) {
+        const textContent = slide.querySelector('.text-content');
+        if (textContent) {
+            console.log('🎯 Found text content element for animation:', textContent);
+            
             // Reset to initial state first
-            content.style.transition = 'none';
-            content.style.opacity = '0';
-            content.style.setProperty('transform', 'translateY(20px)', 'important');
+            textContent.style.transition = 'none';
+            textContent.style.opacity = '0';
+            textContent.style.setProperty('transform', 'translateY(20px)', 'important');
             
             // Force reflow
-            content.offsetHeight;
+            textContent.offsetHeight;
             
             setTimeout(() => {
                 console.log('🎯 Starting text content animation');
-                content.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                content.style.opacity = '1';
-                content.style.setProperty('transform', 'translateY(0)', 'important');
+                textContent.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                textContent.style.opacity = '1';
+                textContent.style.setProperty('transform', 'translateY(0)', 'important');
                 console.log('✅ Text content animation applied');
             }, 100);
+        } else {
+            console.warn('⚠️ No .text-content element found in slide:', slide.innerHTML.substring(0, 200));
         }
     }
     
@@ -3253,21 +2329,6 @@ class ScrollSnapNavigator {
         });
     }
     
-    updateProgress() {
-        if (!this.config.showProgress) return;
-        
-        const progressPercent = ((this.currentSlide + 1) / this.config.totalSlides) * 100;
-        
-        const progressBar = document.querySelector('.progress-fill');
-        if (progressBar) {
-            progressBar.style.width = progressPercent + '%';
-        }
-        
-        const slideCounter = document.querySelector('.current-slide');
-        if (slideCounter) {
-            slideCounter.textContent = this.currentSlide + 1;
-        }
-    }
     
     setupResponsiveHandling() {
         let resizeTimeout;
@@ -3279,19 +2340,6 @@ class ScrollSnapNavigator {
         });
     }
     
-    setupProgressTracking() {
-        if (this.config.showProgress) {
-            this.progressBar = document.querySelector('.progress-fill');
-            this.slideCounter = document.querySelector('.current-slide');
-            this.updateProgress();
-        }
-    }
-    
-    setupAutoplay() {
-        this.autoplayInterval = null;
-        this.autoplayDelay = 5000; // 5 seconds per slide
-        this.startAutoplay();
-    }
     
     handleResize() {
         const viewport = {

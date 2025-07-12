@@ -1,0 +1,251 @@
+title: "PreGen-Minimal Complete Demo"
+author: "AI Assistant" 
+date: "2024-01-15"
+
+slides:
+  # 1. Title Slide
+  - type: "title-slide"
+    style: "black"
+    title:
+      visible: true
+      text: "PreGen-Minimal"
+    subtitle:
+      visible: true
+      text: "Complete Layout Demonstration"
+    content:
+      author:
+        visible: true
+        text: "AI Assistant"
+      date:
+        visible: true
+        text: "2024-01-15"
+
+  # 2. Section Break
+  - type: "section-break"
+    style: "black"
+    content:
+      number: "01"
+      title: "Text Layouts"
+
+  # 3. Text Left
+  - type: "text-left"
+    style: "white"
+    title:
+      visible: true
+      text: "Text Left Layout"
+    content:
+      text: "This layout demonstrates left-aligned text presentation with a clean, professional appearance. The content is positioned on the left side of the slide, making it ideal for detailed explanations and narrative content. This layout works well for storytelling and providing comprehensive information."
+
+  # 4. Text Center
+  - type: "text-center"
+    style: "white"
+    title:
+      visible: true
+      text: "Text Center Layout"
+    content:
+      text: "The center-aligned text layout creates a focused, impactful presentation style. This layout is perfect for key messages, quotes, or important announcements that need to capture the audience's full attention. The centered positioning creates visual balance and emphasis."
+
+  # 5. Section Break
+  - type: "section-break"
+    style: "black"
+    content:
+      number: "02"
+      title: "Image Layouts"
+
+  # 6. Image Full
+  - type: "image-full"
+    style: "white"
+    title:
+      visible: true
+      text: "Full Screen Image"
+    content:
+      image: "assets/sample.jpg"
+
+  # 7. Image Single
+  - type: "image-1"
+    style: "white"
+    title:
+      visible: true
+      text: "Single Image Layout"
+    content:
+      image: "assets/sample.jpg"
+
+  # 8. Image Horizontal 2
+  - type: "image-horizontal-2"
+    style: "white"
+    title:
+      visible: true
+      text: "Two Images Side by Side"
+    content:
+      image1: "assets/sample.jpg"
+      image2: "assets/sample.jpg"
+
+  # 9. Image 2x2 Grid
+  - type: "image-2x2"
+    style: "white"
+    title:
+      visible: true
+      text: "2x2 Image Grid"
+    content:
+      image1: "assets/sample.jpg"
+      image2: "assets/sample.jpg" 
+      image3: "assets/sample.jpg"
+      image4: "assets/sample.jpg"
+
+  # 10. Section Break
+  - type: "section-break"
+    style: "black"
+    content:
+      number: "03"
+      title: "Combined Layouts"
+
+  # 11. Image + Text Horizontal
+  - type: "image-text-horizontal"
+    style: "white"
+    title:
+      visible: true
+      text: "Image and Text Horizontal"
+    content:
+      image: "assets/sample.jpg"
+      text: "This layout combines visual content with descriptive text in a horizontal arrangement. The image appears on the left side while the text content is positioned on the right, creating a balanced and informative presentation style that's perfect for product descriptions, case studies, or detailed explanations."
+
+  # 12. Image + Text Vertical
+  - type: "image-text-vertical"
+    style: "white"
+    title:
+      visible: true
+      text: "Image and Text Vertical"
+    content:
+      image: "assets/sample.jpg"
+      text: "The vertical image-text layout places the visual element at the top with supporting text below. This arrangement is ideal for showcasing products, team members, or any content where the image serves as the primary focus with text providing additional context or description."
+
+  # 13. Section Break
+  - type: "section-break"
+    style: "black"
+    content:
+      number: "04"
+      title: "List Layouts"
+
+  # 14. Bullet List
+  - type: "list"
+    style: "white"
+    title:
+      visible: true
+      text: "Feature List"
+    content:
+      items:
+        - "15 professional layout types for diverse content needs"
+        - "Black and white theme options for different moods"
+        - "Smooth scroll-snap navigation with keyboard controls"
+        - "Dramatic animations with bounce and elastic effects"
+        - "Responsive design that adapts to screen sizes"
+        - "Dynamic content scaling for optimal readability"
+        - "Timeline layouts with horizontal scroll support"
+        - "Card layouts for structured information display"
+
+  # 15. Numbered List
+  - type: "num-list"
+    style: "white"
+    title:
+      visible: true
+      text: "Implementation Steps"
+    content:
+      items:
+        - "Create YAML configuration file with slide definitions"
+        - "Define slide types and content for each layout"
+        - "Run build process to generate HTML presentation"
+        - "Launch preview server for testing and review"
+        - "Navigate using arrow keys or scroll wheel"
+        - "Test animations and responsive behavior"
+        - "Deploy final presentation to web server"
+        - "Share with audience and gather feedback"
+
+  # 16. Section Break
+  - type: "section-break"
+    style: "black"
+    content:
+      number: "05"
+      title: "Card Layouts"
+
+  # 17. Card 2
+  - type: "card-2"
+    style: "white"
+    title:
+      visible: true
+      text: "Two-Card Layout"
+    content:
+      cards:
+        - image: "assets/sample.jpg"
+          title: "Design Focus"
+          description: "Modern, clean aesthetics with professional typography and layout principles that ensure readability and visual appeal."
+        - image: "assets/sample.jpg"
+          title: "User Experience"
+          description: "Intuitive navigation with smooth animations and responsive design that works seamlessly across different devices."
+
+  # 18. Card 3
+  - type: "card-3"
+    style: "white"
+    title:
+      visible: true
+      text: "Three-Card Layout"
+    content:
+      cards:
+        - image: "assets/sample.jpg"
+          title: "Performance"
+          description: "Optimized animations using CSS transforms and hardware acceleration for smooth 60fps presentation experience."
+        - image: "assets/sample.jpg"
+          title: "Flexibility"
+          description: "15 different layout types provide comprehensive options for any presentation content or structure."
+        - image: "assets/sample.jpg"
+          title: "Simplicity"
+          description: "YAML-based configuration makes it easy to create professional presentations without complex tools."
+
+  # 19. Section Break
+  - type: "section-break"
+    style: "black"
+    content:
+      number: "06"
+      title: "Advanced Features"
+
+  # 20. Timeline
+  - type: "timeline"
+    style: "white"
+    title:
+      visible: true
+      text: "Development Timeline"
+    content:
+      events:
+        - time: "Phase 1"
+          title: "Foundation"
+          description: "Core architecture, YAML parsing, and basic layout system"
+        - time: "Phase 2"
+          title: "Layouts"
+          description: "Implementation of all 15 layout types with responsive design"
+        - time: "Phase 3"
+          title: "Animation"
+          description: "Intersection Observer API integration and dramatic effects"
+        - time: "Phase 4"
+          title: "Navigation"
+          description: "Scroll-snap system replacing traditional slide transitions"
+        - time: "Phase 5"
+          title: "Polish"
+          description: "Refactoring, optimization, and comprehensive testing"
+        - time: "Future"
+          title: "Enhancement"
+          description: "AI-powered YAML generation and advanced layout types"
+
+  # 21. Final Section Break
+  - type: "section-break"
+    style: "black"
+    content:
+      number: "07"
+      title: "Conclusion"
+
+  # 22. Thank You Slide
+  - type: "text-center"
+    style: "white"
+    title:
+      visible: true
+      text: "Thank You"
+    content:
+      text: "This comprehensive demonstration showcases all 15 available layout types in PreGen-Minimal. Each layout is designed for specific content types and use cases, providing flexibility for any presentation need. The system combines modern web technologies with intuitive YAML configuration for a powerful yet simple presentation solution."
