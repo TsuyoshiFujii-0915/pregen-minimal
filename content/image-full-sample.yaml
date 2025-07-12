@@ -1,7 +1,0 @@
-type: "image-full"
-style: "white"
-title:
-  visible: true
-  text: "Full Screen Image"
-content:
-  image: "assets/sample.jpg"

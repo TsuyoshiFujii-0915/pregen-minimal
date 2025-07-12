@@ -1,0 +1,89 @@
+presentation:
+  title: "Complete Feature Test"
+  author: "PreGen Team"
+  date: "2024-12-11"
+  theme: "default"
+  settings:
+    autoplay: false
+    loop: false
+    transition_duration: 600
+    show_progress: true
+
+slides:
+  - type: "title-slide"
+    style: "black"
+    title:
+      visible: true
+      text: "Complete Feature Test"
+    subtitle:
+      visible: true
+      text: "All Features with Animations"
+    content:
+      author:
+        visible: true
+        text: "PreGen Team"
+      date:
+        visible: true
+        text: "2024-12-11"
+        
+  - type: "list"
+    style: "white"
+    title:
+      visible: true
+      text: "List with Animations"
+    content:
+      items:
+        - "First item with fade-in animation"
+        - "Second item appears after delay"
+        - "Third item follows sequence"
+        - "Fourth item completes the animation"
+        - "Fifth item demonstrates timing"
+        - "Sixth item shows column layout"
+        
+  - type: "card-3"
+    style: "white"
+    title:
+      visible: true
+      text: "Card Animation Test"
+    content:
+      cards:
+        - image: "sample/images/sample_image.jpg"
+          title: "Card One"
+          description: "First card animates from left"
+        - image: "sample/images/sample_image.jpg"
+          title: "Card Two"
+          description: "Second card follows with delay"
+        - image: "sample/images/sample_image.jpg"
+          title: "Card Three"
+          description: "Third card completes sequence"
+          
+  - type: "timeline"
+    style: "white"
+    title:
+      visible: true
+      text: "Timeline with Horizontal Scroll"
+    content:
+      events:
+        - time: "2020"
+          title: "First Event"
+          description: "Use ← → arrows to navigate horizontally"
+        - time: "2021"
+          title: "Second Event"
+          description: "Timeline scrolls independently"
+        - time: "2022"
+          title: "Third Event"
+          description: "X-axis resets when leaving slide"
+        - time: "2023"
+          title: "Fourth Event"
+          description: "Smooth scrolling within timeline"
+        - time: "2024"
+          title: "Current Event"
+          description: "↓ arrow moves to next slide"
+          
+  - type: "text-center"
+    style: "black"
+    title:
+      visible: true
+      text: "All Features Working!"
+    content:
+      text: "✅ Scroll-snap navigation\n✅ Intersection Observer animations\n✅ Timeline horizontal scroll\n✅ X-axis reset\n✅ Responsive layouts"

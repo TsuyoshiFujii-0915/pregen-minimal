@@ -1,8 +1,0 @@
-type: "image-text-horizontal"
-style: "white"
-title:
-  visible: true
-  text: "Image + Text Layout"
-content:
-  image: "assets/sample.jpg"
-  text: "This is a horizontal image and text layout. The image appears on the left side, taking up about 45% of the screen width, while the text content is displayed on the right side. The text fades in after the slide transition completes, creating a staged animation effect that draws attention to both the visual and textual content."

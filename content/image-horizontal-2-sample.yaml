@@ -1,8 +1,0 @@
-type: "image-horizontal-2"
-style: "white"
-title:
-  visible: true
-  text: "Two Images Side by Side"
-content:
-  image1: "assets/sample.jpg"
-  image2: "assets/sample.jpg"

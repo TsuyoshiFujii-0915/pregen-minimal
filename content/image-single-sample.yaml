@@ -1,7 +1,0 @@
-type: "image-1"
-style: "white"
-title:
-  visible: true
-  text: "Single Image Display"
-content:
-  image: "assets/sample.jpg"
