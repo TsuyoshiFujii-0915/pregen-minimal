@@ -20,6 +20,8 @@
   "description": "A system that automatically generates beautiful, modern designer website-style presentations with smooth animations from YAML input files",
   "dependencies": {
     "fs-extra": "^11.3.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "openai": "^4.68.0",
+    "dotenv": "^16.4.5"
   }
 }

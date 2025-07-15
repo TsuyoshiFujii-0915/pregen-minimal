@@ -15,6 +15,9 @@ class PreGenBuilder {
     try {
       console.log('🚀 Starting PreGen-Minimal build process...');
       
+      // Pre-build system checks
+      await this.performSystemChecks();
+      
       // Ensure presentations directory exists
       await fs.ensureDir(this.presentationsDir);
       
@@ -38,8 +41,143 @@ class PreGenBuilder {
       
     } catch (error) {
       console.error('❌ Build process failed:', error.message);
+      
+      // Enhanced error reporting with recovery suggestions
+      this.reportBuildFailure(error);
       process.exit(1);
     }
+  }
+
+  /**
+   * Perform comprehensive system checks before build process
+   */
+  async performSystemChecks() {
+    console.log('🔍 Performing system checks...');
+    const checks = [];
+    
+    // Check if content directory exists
+    if (!(await fs.pathExists(this.contentDir))) {
+      checks.push({ 
+        type: 'error', 
+        message: `Content directory not found: ${this.contentDir}`,
+        solution: 'Create the content/ directory and add YAML presentation files'
+      });
+    }
+    
+    // Check if sample directory exists for fallback images
+    if (!(await fs.pathExists(this.sampleDir))) {
+      checks.push({ 
+        type: 'warning', 
+        message: `Sample directory not found: ${this.sampleDir}`,
+        solution: 'Create sample/ directory with sample images for fallbacks'
+      });
+    } else {
+      // Check for sample image
+      const sampleImagePath = path.join(this.sampleDir, 'images', 'sample_image.jpg');
+      if (!(await fs.pathExists(sampleImagePath))) {
+        checks.push({ 
+          type: 'warning', 
+          message: `Sample image not found: ${sampleImagePath}`,
+          solution: 'Add sample_image.jpg to sample/images/ for image fallbacks'
+        });
+      }
+    }
+    
+    // Check Node.js modules
+    try {
+      require('js-yaml');
+      require('fs-extra');
+    } catch (error) {
+      checks.push({ 
+        type: 'error', 
+        message: 'Required Node.js modules not found',
+        solution: 'Run "npm install" to install dependencies'
+      });
+    }
+    
+    // Check write permissions for presentations directory
+    try {
+      await fs.ensureDir(this.presentationsDir);
+      const testFile = path.join(this.presentationsDir, '.write-test');
+      await fs.writeFile(testFile, 'test');
+      await fs.remove(testFile);
+    } catch (error) {
+      checks.push({ 
+        type: 'error', 
+        message: `Cannot write to presentations directory: ${this.presentationsDir}`,
+        solution: 'Check directory permissions or run with appropriate privileges'
+      });
+    }
+    
+    // Report checks
+    const errors = checks.filter(c => c.type === 'error');
+    const warnings = checks.filter(c => c.type === 'warning');
+    
+    if (warnings.length > 0) {
+      console.log(`⚠️  ${warnings.length} system warning(s):`);
+      warnings.forEach(w => console.log(`   ${w.message} - ${w.solution}`));
+    }
+    
+    if (errors.length > 0) {
+      console.log(`❌ ${errors.length} system error(s):`);
+      errors.forEach(e => console.log(`   ${e.message} - ${e.solution}`));
+      throw new Error(`System checks failed with ${errors.length} error(s)`);
+    }
+    
+    if (warnings.length === 0 && errors.length === 0) {
+      console.log('✅ All system checks passed');
+    }
+  }
+  
+  /**
+   * Report build failure with enhanced error information and recovery suggestions
+   * @param {Error} error - The error that caused the build failure
+   */
+  reportBuildFailure(error) {
+    console.log('\n📋 Build Failure Report:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    // Categorize error types
+    if (error.message.includes('YAML')) {
+      console.log('🔍 Error Type: YAML Configuration Issue');
+      console.log('💡 Suggestions:');
+      console.log('   • Check YAML syntax and indentation');
+      console.log('   • Verify all required fields are present');
+      console.log('   • Validate slide types against supported layouts');
+      console.log('   • Ensure content matches the slide type requirements');
+    } else if (error.message.includes('Image') || error.message.includes('asset')) {
+      console.log('🔍 Error Type: Asset/Image Issue');
+      console.log('💡 Suggestions:');
+      console.log('   • Check if referenced image files exist');
+      console.log('   • Verify image file paths are correct');
+      console.log('   • Ensure sample/ directory contains fallback images');
+      console.log('   • Check file permissions for image files');
+    } else if (error.message.includes('permission') || error.message.includes('EACCES')) {
+      console.log('🔍 Error Type: File Permission Issue');
+      console.log('💡 Suggestions:');
+      console.log('   • Check directory write permissions');
+      console.log('   • Run with appropriate user privileges');
+      console.log('   • Ensure presentations/ directory is writable');
+    } else if (error.message.includes('ENOENT') || error.message.includes('not found')) {
+      console.log('🔍 Error Type: File/Directory Not Found');
+      console.log('💡 Suggestions:');
+      console.log('   • Create missing directories (content/, sample/, etc.)');
+      console.log('   • Check file paths and names');
+      console.log('   • Verify working directory is correct');
+    } else {
+      console.log('🔍 Error Type: General Build Error');
+      console.log('💡 Suggestions:');
+      console.log('   • Check Node.js version compatibility');
+      console.log('   • Run "npm install" to update dependencies');
+      console.log('   • Verify project structure is intact');
+    }
+    
+    console.log('\n🔧 Recovery Steps:');
+    console.log('   1. Review the error message above');
+    console.log('   2. Apply suggested fixes');
+    console.log('   3. Run "node build.js" again');
+    console.log('   4. If issues persist, check file permissions and paths');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 
   async getYamlFiles() {
@@ -50,7 +188,159 @@ class PreGenBuilder {
   }
 
   /**
-   * Parse YAML content for multi-slide presentations
+   * Get comprehensive JSON schema for YAML validation
+   * @returns {Object} JSON Schema for presentation YAML
+   */
+  getPresentationSchema() {
+    return {
+      type: "object",
+      properties: {
+        title: { 
+          type: "string",
+          minLength: 1,
+          description: "Presentation title"
+        },
+        author: { 
+          type: "string",
+          description: "Presentation author"
+        },
+        date: { 
+          type: "string", 
+          description: "Presentation date"
+        },
+        slides: {
+          type: "array",
+          minItems: 1,
+          description: "Array of presentation slides",
+          items: {
+            type: "object",
+            properties: {
+              type: {
+                enum: [
+                  "title-slide", "section-break", "text-left", "text-center",
+                  "image-full", "image-1", "image-horizontal-2", "image-2x2",
+                  "image-text-horizontal", "image-text-vertical",
+                  "list", "num-list", "card-2", "card-3", "timeline"
+                ],
+                description: "Slide layout type"
+              },
+              style: {
+                enum: ["black", "white"],
+                description: "Slide theme style"
+              },
+              title: {
+                type: "object",
+                properties: {
+                  visible: { type: "boolean" },
+                  text: { type: "string" }
+                },
+                additionalProperties: false
+              },
+              subtitle: {
+                type: "object", 
+                properties: {
+                  visible: { type: "boolean" },
+                  text: { type: "string" }
+                },
+                additionalProperties: false
+              },
+              content: {
+                type: "object",
+                description: "Slide content varies by type"
+                // Note: Content validation is layout-specific, handled separately
+              }
+            },
+            required: ["type"],
+            additionalProperties: false
+          }
+        }
+      },
+      required: ["slides"],
+      additionalProperties: false
+    };
+  }
+  
+  /**
+   * Validate YAML data against JSON schema
+   * @param {Object} data - Parsed YAML data
+   * @param {string} filename - File name for error reporting
+   * @returns {Object} Validation result with errors and warnings
+   */
+  validateYamlSchema(data, filename) {
+    const schema = this.getPresentationSchema();
+    const errors = [];
+    const warnings = [];
+    
+    // Basic type validation
+    if (!data || typeof data !== 'object') {
+      errors.push('YAML root must be an object');
+      return { errors, warnings };
+    }
+    
+    // Required fields validation
+    if (!data.slides) {
+      errors.push('Missing required "slides" field');
+    } else if (!Array.isArray(data.slides)) {
+      errors.push('Field "slides" must be an array');
+    } else if (data.slides.length === 0) {
+      errors.push('Field "slides" must contain at least one slide');
+    }
+    
+    // Optional field validation with warnings
+    if (!data.title || data.title.trim() === '') {
+      warnings.push('Missing or empty "title" field');
+    }
+    
+    if (!data.author || data.author.trim() === '') {
+      warnings.push('Missing or empty "author" field');
+    }
+    
+    if (!data.date || data.date.trim() === '') {
+      warnings.push('Missing or empty "date" field');
+    }
+    
+    // Validate slides array if present
+    if (data.slides && Array.isArray(data.slides)) {
+      data.slides.forEach((slide, index) => {
+        const slideNum = index + 1;
+        
+        // Required type field
+        if (!slide.type) {
+          errors.push(`Slide ${slideNum}: Missing required "type" field`);
+        } else {
+          const validTypes = schema.properties.slides.items.properties.type.enum;
+          if (!validTypes.includes(slide.type)) {
+            errors.push(`Slide ${slideNum}: Invalid type "${slide.type}". Valid types: ${validTypes.join(', ')}`);
+          }
+        }
+        
+        // Optional style validation
+        if (slide.style) {
+          const validStyles = schema.properties.slides.items.properties.style.enum;
+          if (!validStyles.includes(slide.style)) {
+            errors.push(`Slide ${slideNum}: Invalid style "${slide.style}". Valid styles: ${validStyles.join(', ')}`);
+          }
+        }
+        
+        // Validate title structure if present
+        if (slide.title && typeof slide.title !== 'object') {
+          errors.push(`Slide ${slideNum}: Field "title" must be an object with "visible" and "text" properties`);
+        }
+        
+        // Validate subtitle structure if present  
+        if (slide.subtitle && typeof slide.subtitle !== 'object') {
+          errors.push(`Slide ${slideNum}: Field "subtitle" must be an object with "visible" and "text" properties`);
+        }
+        
+        // Content validation is layout-specific, handled in validateSlideContent
+      });
+    }
+    
+    return { errors, warnings };
+  }
+
+  /**
+   * Parse YAML content for multi-slide presentations with schema validation
    * @param {string} yamlContent - Raw YAML content
    * @returns {Object} Normalized presentation data with metadata and slides array
    */
@@ -60,6 +350,12 @@ class PreGenBuilder {
       
       if (!data || typeof data !== 'object') {
         throw new Error('Invalid YAML: Expected object structure');
+      }
+      
+      // Basic schema validation first
+      const schemaValidation = this.validateYamlSchema(data, 'current file');
+      if (schemaValidation.errors.length > 0) {
+        throw new Error(`Schema validation failed:\n${schemaValidation.errors.map(e => `  • ${e}`).join('\n')}`);
       }
       
       // Expect multi-slide format only
@@ -85,26 +381,39 @@ class PreGenBuilder {
   }
 
   /**
-   * Validate parsed presentation data structure
+   * Enhanced validation for presentation data structure with comprehensive error handling
    * @param {Object} presentationData - Parsed presentation data
    * @param {string} filename - File name for error reporting
    */
   validatePresentationData(presentationData, filename) {
+    const errors = [];
+    const warnings = [];
+    
     // Validate presentation metadata
     if (!presentationData.presentation) {
-      throw new Error(`Missing presentation metadata in ${filename}`);
+      errors.push(`Missing presentation metadata in ${filename}`);
+    } else {
+      // Validate metadata fields
+      if (!presentationData.presentation.title || presentationData.presentation.title.trim() === '') {
+        warnings.push(`Presentation title is empty or missing in ${filename}`);
+      }
+      if (!presentationData.presentation.author || presentationData.presentation.author.trim() === '') {
+        warnings.push(`Presentation author is empty or missing in ${filename}`);
+      }
     }
 
     // Validate slides array
     if (!presentationData.slides || !Array.isArray(presentationData.slides)) {
-      throw new Error(`Missing or invalid slides array in ${filename}`);
+      errors.push(`Missing or invalid slides array in ${filename} - must be an array`);
+      this.reportValidationResults(errors, warnings, filename);
+      return; // Cannot continue without valid slides array
     }
 
     if (presentationData.slides.length === 0) {
-      throw new Error(`Presentation must contain at least one slide in ${filename}`);
+      errors.push(`Presentation must contain at least one slide in ${filename}`);
     }
 
-    // Validate each slide
+    // Enhanced slide validation
     const validLayouts = [
       'title-slide', 'section-break', 'text-left', 'text-center',
       'image-full', 'image-1', 'image-horizontal-2', 'image-2x2',
@@ -112,21 +421,168 @@ class PreGenBuilder {
       'list', 'num-list', 'card-2', 'card-3', 'timeline'
     ];
 
+    const validStyles = ['black', 'white'];
+    
     presentationData.slides.forEach((slide, index) => {
+      const slideNumber = index + 1;
+      
+      // Check required fields
       if (!slide.type) {
-        throw new Error(`Slide ${index + 1} missing required "type" field in ${filename}`);
+        errors.push(`Slide ${slideNumber}: Missing required "type" field in ${filename}`);
+        return; // Skip further validation for this slide
       }
 
+      // Validate slide type
       if (!validLayouts.includes(slide.type)) {
-        throw new Error(`Slide ${index + 1} has invalid layout type "${slide.type}" in ${filename}. Valid types: ${validLayouts.join(', ')}`);
+        errors.push(`Slide ${slideNumber}: Invalid layout type "${slide.type}" in ${filename}. Valid types: ${validLayouts.join(', ')}`);
       }
 
-      if (slide.style && !['black', 'white'].includes(slide.style)) {
-        throw new Error(`Slide ${index + 1} has invalid style "${slide.style}" in ${filename}. Valid styles: black, white`);
+      // Validate slide style
+      if (slide.style && !validStyles.includes(slide.style)) {
+        errors.push(`Slide ${slideNumber}: Invalid style "${slide.style}" in ${filename}. Valid styles: ${validStyles.join(', ')}`);
+      }
+      
+      // Content validation based on slide type
+      try {
+        this.validateSlideContent(slide, slideNumber, filename, errors, warnings);
+      } catch (error) {
+        errors.push(`Slide ${slideNumber}: Content validation failed - ${error.message}`);
       }
     });
 
+    // Report all validation results
+    this.reportValidationResults(errors, warnings, filename);
+    
+    if (errors.length > 0) {
+      const errorSummary = `Validation failed for ${filename} with ${errors.length} error(s):\n${errors.map(e => `  • ${e}`).join('\n')}`;
+      throw new Error(errorSummary);
+    }
+    
     console.log(`✅ Validated multi-slide presentation with ${presentationData.slides.length} slide(s)`);
+  }
+  
+  /**
+   * Validate content structure based on slide type
+   * @param {Object} slide - Slide data to validate
+   * @param {number} slideNumber - Slide number for error reporting  
+   * @param {string} filename - File name for error reporting
+   * @param {Array} errors - Array to collect validation errors
+   * @param {Array} warnings - Array to collect validation warnings
+   */
+  validateSlideContent(slide, slideNumber, filename, errors, warnings) {
+    const { type, content, title } = slide;
+    
+    switch (type) {
+      case 'title-slide':
+        if (!title?.text && !content?.author?.text && !content?.date?.text) {
+          warnings.push(`Slide ${slideNumber}: Title slide has no visible content (title, author, or date)`);
+        }
+        break;
+        
+      case 'section-break':
+        if (!content?.number && !content?.title) {
+          warnings.push(`Slide ${slideNumber}: Section break missing number and title`);
+        }
+        break;
+        
+      case 'text-left':
+      case 'text-center':
+        if (!content?.text || content.text.trim() === '') {
+          errors.push(`Slide ${slideNumber}: Text layout requires content.text field`);
+        }
+        break;
+        
+      case 'image-full':
+      case 'image-1':
+        if (!content?.image) {
+          errors.push(`Slide ${slideNumber}: Image layout requires content.image field`);
+        }
+        break;
+        
+      case 'image-horizontal-2':
+        if (!content?.image1 || !content?.image2) {
+          errors.push(`Slide ${slideNumber}: Horizontal-2 layout requires content.image1 and content.image2 fields`);
+        }
+        break;
+        
+      case 'image-2x2':
+        const requiredImages = ['image1', 'image2', 'image3', 'image4'];
+        const missingImages = requiredImages.filter(img => !content?.[img]);
+        if (missingImages.length > 0) {
+          errors.push(`Slide ${slideNumber}: 2x2 layout missing required images: ${missingImages.join(', ')}`);
+        }
+        break;
+        
+      case 'image-text-horizontal':
+      case 'image-text-vertical':
+        if (!content?.image) {
+          errors.push(`Slide ${slideNumber}: Image-text layout requires content.image field`);
+        }
+        if (!content?.text || content.text.trim() === '') {
+          errors.push(`Slide ${slideNumber}: Image-text layout requires content.text field`);
+        }
+        break;
+        
+      case 'list':
+      case 'num-list':
+        if (!content?.items || !Array.isArray(content.items)) {
+          errors.push(`Slide ${slideNumber}: List layout requires content.items array`);
+        } else if (content.items.length === 0) {
+          warnings.push(`Slide ${slideNumber}: List layout has empty items array`);
+        } else if (content.items.length > 12) {
+          warnings.push(`Slide ${slideNumber}: List has ${content.items.length} items - consider splitting for better readability`);
+        }
+        break;
+        
+      case 'card-2':
+        if (!content?.cards || !Array.isArray(content.cards)) {
+          errors.push(`Slide ${slideNumber}: Card-2 layout requires content.cards array`);
+        } else if (content.cards.length !== 2) {
+          errors.push(`Slide ${slideNumber}: Card-2 layout requires exactly 2 cards, found ${content.cards.length}`);
+        }
+        break;
+        
+      case 'card-3':
+        if (!content?.cards || !Array.isArray(content.cards)) {
+          errors.push(`Slide ${slideNumber}: Card-3 layout requires content.cards array`);
+        } else if (content.cards.length !== 3) {
+          errors.push(`Slide ${slideNumber}: Card-3 layout requires exactly 3 cards, found ${content.cards.length}`);
+        }
+        break;
+        
+      case 'timeline':
+        if (!content?.events || !Array.isArray(content.events)) {
+          errors.push(`Slide ${slideNumber}: Timeline layout requires content.events array`);
+        } else if (content.events.length === 0) {
+          warnings.push(`Slide ${slideNumber}: Timeline layout has empty events array`);
+        } else {
+          // Validate timeline events
+          content.events.forEach((event, eventIndex) => {
+            if (!event.time && !event.title) {
+              warnings.push(`Slide ${slideNumber}: Timeline event ${eventIndex + 1} missing time and title`);
+            }
+          });
+        }
+        break;
+    }
+  }
+  
+  /**
+   * Report validation results with proper formatting
+   * @param {Array} errors - Validation errors
+   * @param {Array} warnings - Validation warnings  
+   * @param {string} filename - File name for reporting
+   */
+  reportValidationResults(errors, warnings, filename) {
+    if (warnings.length > 0) {
+      console.log(`⚠️  ${warnings.length} validation warning(s) for ${filename}:`);
+      warnings.forEach(warning => console.log(`   ${warning}`));
+    }
+    
+    if (errors.length > 0) {
+      console.log(`❌ ${errors.length} validation error(s) for ${filename}:`);
+      errors.forEach(error => console.log(`   ${error}`));
+    }
   }
 
   async processYamlFile(yamlFilePath) {
@@ -184,11 +640,79 @@ class PreGenBuilder {
     
     console.log(`📷 Found ${imageReferences.size} unique image reference(s)`);
     
-    // Copy custom images if they exist (placeholder for future implementation)
+    // Copy custom images if they exist
     for (const imageRef of imageReferences) {
       if (imageRef !== 'assets/sample.jpg') {
-        console.log(`📸 Image reference found: ${imageRef} (custom image copying not yet implemented)`);
+        await this.copyCustomImage(imageRef, assetsDir);
       }
+    }
+  }
+
+  /**
+   * Copy custom image with path resolution and error handling
+   * @param {string} imageRef - Image reference from YAML content  
+   * @param {string} assetsDir - Destination assets directory
+   */
+  async copyCustomImage(imageRef, assetsDir) {
+    try {
+      // Determine source path based on reference format
+      let sourcePath;
+      let destFilename;
+      
+      if (imageRef.startsWith('sample/')) {
+        // Sample directory reference (e.g., "sample/images/sample_image.jpg")
+        sourcePath = path.join(this.sampleDir, imageRef.substring('sample/'.length));
+        destFilename = path.basename(imageRef);
+      } else if (imageRef.startsWith('references/')) {
+        // References directory reference (e.g., "references/reference_1.jpg")
+        sourcePath = path.join(__dirname, imageRef);
+        destFilename = path.basename(imageRef);
+      } else if (path.isAbsolute(imageRef)) {
+        // Absolute path reference
+        sourcePath = imageRef;
+        destFilename = path.basename(imageRef);
+      } else {
+        // Relative path reference - check in project root
+        sourcePath = path.join(__dirname, imageRef);
+        destFilename = path.basename(imageRef);
+      }
+      
+      const destPath = path.join(assetsDir, destFilename);
+      
+      // Check if source file exists
+      if (await fs.pathExists(sourcePath)) {
+        // Copy image to assets directory
+        await fs.copy(sourcePath, destPath);
+        
+        // Basic optimization: log file size
+        const stats = await fs.stat(destPath);
+        const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+        
+        console.log(`✅ Copied ${imageRef} → assets/${destFilename} (${fileSizeMB}MB)`);
+        
+        // Optional: Warn about large files
+        if (stats.size > 2 * 1024 * 1024) { // 2MB threshold
+          console.log(`⚠️  Large image file: ${destFilename} (${fileSizeMB}MB) - consider optimization`);
+        }
+        
+      } else {
+        // Handle missing files gracefully
+        console.log(`❌ Image not found: ${imageRef} (${sourcePath})`);
+        console.log(`📝 Creating placeholder for missing image: assets/${destFilename}`);
+        
+        // Copy sample image as fallback
+        const sampleImageSource = path.join(this.sampleDir, 'images', 'sample_image.jpg');
+        if (await fs.pathExists(sampleImageSource)) {
+          await fs.copy(sampleImageSource, destPath);
+          console.log(`🔄 Used sample image as fallback for ${destFilename}`);
+        } else {
+          console.log(`⚠️  No fallback image available for ${destFilename}`);
+        }
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error copying image ${imageRef}:`, error.message);
+      // Continue processing other images rather than failing the entire build
     }
   }
 

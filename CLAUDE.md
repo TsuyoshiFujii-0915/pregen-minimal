@@ -178,17 +178,27 @@ slides:
 ## Technical Architecture
 
 ### Build Process
-1. **YAML Parsing**: Multi-slide structure validation and processing
-2. **HTML Generation**: Single HTML file with all slides as scroll sections
-3. **Asset Management**: Image copying and optimization (planned)
-4. **CSS/JS Embedding**: All styles and scripts embedded in HTML
-5. **Responsive Optimization**: Automatic screen size detection and scaling
+1. **YAML Input**: Manual YAML creation or AI-generated YAML from text documents
+2. **YAML Parsing**: Multi-slide structure validation and processing (build.js)
+3. **HTML Generation**: Single HTML file with all slides as scroll sections (build.js)
+4. **Asset Management**: Automatic image detection, copying, optimization, and fallback handling (build.js)
+5. **CSS/JS Embedding**: All styles and scripts embedded in HTML (build.js)
+6. **Responsive Optimization**: Automatic screen size detection and scaling (build.js)
+
+**AI Generation Workflow** (separate process):
+1. **Document Input**: User provides text/markdown documents
+2. **AI Processing**: OpenAI o4-mini-2025-04-16 API with Structured Outputs generates YAML (ai-generator.js)
+3. **YAML Output**: Generated files saved to content/ directory
+4. **Build Integration**: Existing build.js processes the generated YAML files
+
+**Note**: o4-mini-2025-04-16 is the latest OpenAI reasoning model with enhanced performance and Structured Outputs support. Use Context7 for accessing the most current model specifications and features.
 
 ### File Structure
 ```
 content/
 ├── presentation1.yaml    # Multi-slide presentation
-├── presentation2.yaml    # Multi-slide presentation
+├── presentation2.yaml    # Multi-slide presentation  
+├── generated-*.yaml      # AI-generated YAML files (future)
 └── ...
 
 presentations/
@@ -199,12 +209,19 @@ presentations/
 │   ├── index.html
 │   └── assets/
 └── ...
+
+ai-generator.js           # Standalone AI YAML generator (future)
+build.js                  # Core presentation builder
 ```
 
 ### Commands
 ```bash
 # Build all presentations
 node build.js
+
+# Generate YAML from text documents (future feature)
+node ai-generator.js --input document.txt --output presentation.yaml
+node ai-generator.js --input document.md --auto-build
 
 # Preview presentations
 npm run preview
@@ -239,42 +256,34 @@ npm run preview
 **Priority**: Critical  
 **Description**: Automatic YAML generation from user documents (txt/md) using OpenAI API with Structured Outputs for guaranteed format compliance  
 **User Benefit**: Eliminates manual YAML writing, dramatically improves UX  
-**Estimated Time**: 8-12 hours  
+**Architecture**: **Separate standalone process** independent from build.js - generates YAML files that are then processed by the existing build system  
+**Estimated Time**: 4-7 hours  
 **Requirements**:
 
-#### Phase 1: Schema & API Foundation (3-4 hours)
+#### Phase 1: Schema & API Foundation (2-3 hours)
 - **JSON Schema Definition**: Create comprehensive schema for all 15 layout types
-- **OpenAI Integration**: Implement GPT-4 API with Structured Outputs
+- **OpenAI Integration**: Implement o4-mini-2025-04-16 API with Structured Outputs (use Context7 for latest model specifications)
 - **Schema Validation**: Ensure generated YAML matches exact specification
-- **Error Handling**: API failure recovery and fallback mechanisms
+- **API Error Handling**: Failure recovery and fallback mechanisms
 
-#### Phase 2: Content Analysis Engine (3-4 hours)
+#### Phase 2: Document Processing (1-2 hours)
 - **Document Parsing**: Support txt, md, and plain text input
-- **Content Segmentation**: Intelligent slide boundary detection
-- **Layout Selection**: AI-driven layout type recommendation based on content
-- **Image Detection**: Identify image references and requirements in text
+- **Image Path Validation**: Error handling for invalid/missing image file paths
 
-#### Phase 3: Prompt Engineering & Templates (2-3 hours)
-- **Master Prompt**: Comprehensive system prompt with layout specifications
-- **Layout-Specific Prompts**: Specialized prompts for each layout type
-- **Context Management**: Maintain presentation coherence across slides
-- **Example-Based Learning**: Few-shot prompting with high-quality examples
-
-#### Phase 4: User Interface & Integration (2-3 hours)
-- **Input Interface**: Clean text/file upload interface
-- **Real-time Preview**: Live YAML generation and presentation preview
-- **Manual Override**: Allow user editing of generated YAML
-- **Batch Processing**: Handle multiple documents/sections
+#### Phase 3: AI Prompt System (1-2 hours)
+- **Master Prompt Design**: System prompt for YAML generation with layout specifications
 
 **Technical Implementation**:
 ```javascript
-// Core API Integration
+// Standalone AI Generator (separate from build.js)
+// File: ai-generator.js
+
 const generateYAML = async (inputText, options = {}) => {
   const schema = getYAMLSchema();
   const prompt = buildContextualPrompt(inputText, options);
   
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "o4-mini-2025-04-16",  // Latest reasoning model with Structured Outputs support
     messages: [{ role: "user", content: prompt }],
     response_format: { 
       type: "json_schema",
@@ -282,8 +291,22 @@ const generateYAML = async (inputText, options = {}) => {
     }
   });
   
-  return validateAndCleanYAML(response.choices[0].message.content);
+  const yamlContent = validateAndCleanYAML(response.choices[0].message.content);
+  
+  // Save generated YAML to content directory
+  const filename = `generated-${Date.now()}.yaml`;
+  await fs.writeFile(`content/${filename}`, yamlContent);
+  
+  // Optionally trigger build process
+  if (options.autoBuild) {
+    await exec('node build.js');
+  }
+  
+  return { filename, yamlContent };
 };
+
+// Usage:
+// node ai-generator.js --input document.txt --output presentation.yaml
 ```
 
 **JSON Schema Structure**:
@@ -371,10 +394,10 @@ const generateYAML = async (inputText, options = {}) => {
 - ✅ **Scroll-Snap Navigation**: Complete (vertical scroll, intersection observer)
 - ✅ **Dramatic Animations**: Complete (all layout types with high-impact effects)
 - ✅ **Responsive Design**: Complete (automatic scaling and content fitting)
+- ✅ **Image Asset Management**: Complete (auto-detection, copying, optimization, fallbacks)
+- ✅ **Error Handling**: Complete (comprehensive validation, system checks, recovery)
+- ✅ **YAML Validation**: Complete (JSON schema, type checking, helpful messages)
 - 🚀 **AI-Powered YAML Generation**: Not implemented (critical priority - UX revolution)
-- 🔄 **Image Asset Management**: Not implemented (high priority)
-- 🔄 **Error Handling**: Basic implementation (needs enhancement)
-- 🔄 **YAML Validation**: Basic implementation (needs schema validation)
 - 📋 **Future Layouts**: Not started (planned for future iterations)
 
 ## Project Maturity
@@ -396,72 +419,58 @@ const generateYAML = async (inputText, options = {}) => {
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ☐ | ASSET-01 | Image Reference Detection | Pending | Scan YAML content for image references |
-| ☐ | ASSET-02 | Asset Directory Creation | Pending | Create presentations/*/assets/ directories |
-| ☐ | ASSET-03 | Image Copy Pipeline | Pending | Copy referenced images to asset directories |
-| ☐ | ASSET-04 | Image Optimization | Pending | Basic compression and format optimization |
-| ☐ | ASSET-05 | Missing File Handling | Pending | Graceful handling of missing images |
+| ✅ | ASSET-01 | Image Reference Detection | Completed | Scan YAML content for image references |
+| ✅ | ASSET-02 | Asset Directory Creation | Completed | Create presentations/*/assets/ directories |
+| ✅ | ASSET-03 | Image Copy Pipeline | Completed | Copy referenced images to asset directories |
+| ✅ | ASSET-04 | Image Optimization | Completed | Basic compression and format optimization |
+| ✅ | ASSET-05 | Missing File Handling | Completed | Graceful handling of missing images |
 
 #### 2. Error Handling & Validation  
 **Priority**: High | **Estimated Time**: 2-3 hours
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ☐ | ERROR-01 | YAML Validation Enhancement | Pending | Comprehensive validation with helpful messages |
-| ☐ | ERROR-02 | File Detection System | Pending | Missing file detection and warnings |
-| ☐ | ERROR-03 | Build Process Recovery | Pending | Failure recovery and diagnostics |
-| ☐ | ERROR-04 | Invalid Configuration Handling | Pending | Handle invalid slide types/configs |
+| ✅ | ERROR-01 | YAML Validation Enhancement | Completed | Comprehensive validation with helpful messages |
+| ✅ | ERROR-02 | File Detection System | Completed | Missing file detection and warnings |
+| ✅ | ERROR-03 | Build Process Recovery | Completed | Failure recovery and diagnostics |
+| ✅ | ERROR-04 | Invalid Configuration Handling | Completed | Handle invalid slide types/configs |
 
 #### 3. YAML Structure Validation
 **Priority**: High | **Estimated Time**: 2-3 hours
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ☐ | SCHEMA-01 | JSON Schema Definition | Pending | Define schema for all layout types |
-| ☐ | SCHEMA-02 | Type Checking System | Pending | Validate all content field types |
-| ☐ | SCHEMA-03 | Required Field Validation | Pending | Ensure required fields are present |
-| ☐ | SCHEMA-04 | Error Message System | Pending | User-friendly error messages |
+| ✅ | SCHEMA-01 | JSON Schema Definition | Completed | Define schema for all layout types |
+| ✅ | SCHEMA-02 | Type Checking System | Completed | Validate all content field types |
+| ✅ | SCHEMA-03 | Required Field Validation | Completed | Ensure required fields are present |
+| ✅ | SCHEMA-04 | Error Message System | Completed | User-friendly error messages |
 
 ### Phase 2: AI-Powered Generation System
 
 #### 4. AI-Powered YAML Generation System 🤖
-**Priority**: Critical | **Estimated Time**: 8-12 hours
+**Priority**: Critical | **Estimated Time**: 4-7 hours
 
-**Phase 1: Schema & API Foundation (3-4 hours)**
+**Phase 1: Schema & API Foundation (2-3 hours)**
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
 | ☐ | AI-01 | JSON Schema Definition | Pending | Comprehensive schema for all 15 layout types |
-| ☐ | AI-02 | OpenAI API Integration | Pending | Implement GPT-4 API with Structured Outputs |
+| ☐ | AI-02 | OpenAI API Integration | Pending | Implement o4-mini-2025-04-16 API with Structured Outputs (use Context7 for model specs) |
 | ☐ | AI-03 | Schema Validation | Pending | Ensure generated YAML matches specification |
 | ☐ | AI-04 | API Error Handling | Pending | Failure recovery and fallback mechanisms |
 
-**Phase 2: Content Analysis Engine (3-4 hours)**
+**Phase 2: Document Processing (1-2 hours)**
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
 | ☐ | AI-05 | Document Parsing | Pending | Support txt, md, and plain text input |
-| ☐ | AI-06 | Content Segmentation | Pending | Intelligent slide boundary detection |
-| ☐ | AI-07 | Layout Selection | Pending | AI-driven layout type recommendation |
-| ☐ | AI-08 | Image Detection | Pending | Identify image references in text |
+| ☐ | AI-06 | Image Path Validation | Pending | Error handling for invalid/missing image file paths |
 
-**Phase 3: Prompt Engineering & Templates (2-3 hours)**
+**Phase 3: AI Prompt System (1-2 hours)**
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ☐ | AI-09 | Master Prompt Design | Pending | System prompt with layout specifications |
-| ☐ | AI-10 | Layout-Specific Prompts | Pending | Specialized prompts for each layout |
-| ☐ | AI-11 | Context Management | Pending | Maintain presentation coherence |
-| ☐ | AI-12 | Example-Based Learning | Pending | Few-shot prompting with examples |
-
-**Phase 4: User Interface & Integration (2-3 hours)**
-
-| ✓ | Task ID | Task Name | Status | Description |
-|---|---------|-----------|--------|-------------|
-| ☐ | AI-13 | Input Interface | Pending | Text/file upload interface |
-| ☐ | AI-14 | Real-time Preview | Pending | Live YAML generation and preview |
-| ☐ | AI-15 | Manual Override | Pending | Allow user editing of generated YAML |
-| ☐ | AI-16 | Batch Processing | Pending | Handle multiple documents/sections |
+| ☐ | AI-07 | Master Prompt Design | Pending | System prompt for YAML generation with layout specifications |
 
 ### Phase 3: Future Extensions
 
@@ -485,11 +494,14 @@ const generateYAML = async (inputText, options = {}) => {
 - Scroll-Snap Navigation (vertical scroll, intersection observer)
 - Dramatic Animations (all layout types with high-impact effects)
 - Responsive Design (automatic scaling and content fitting)
+- **Phase 1 Complete**: Image Asset Management System (5 tasks)
+- **Phase 1 Complete**: Error Handling & Validation (4 tasks)  
+- **Phase 1 Complete**: YAML Structure Validation (4 tasks)
 
-### 🔄 In Progress Features
-- **Total Pending Tasks**: 26 tasks across 5 major components
-- **Estimated Total Time**: 19-27 hours
-- **Next Priority**: Image Asset Management System
+### 🚀 Next Phase Ready
+- **Total Completed Tasks**: 13/13 Phase 1 tasks (100% complete)
+- **Next Priority**: AI-Powered YAML Generation System (7 tasks)
+- **Estimated Time for Phase 2**: 4-7 hours
 
 ### 📋 Task Status Legend
 - **☐**: Not started
@@ -499,4 +511,4 @@ const generateYAML = async (inputText, options = {}) => {
 
 ---
 
-*Last Updated: Session 6 - Added comprehensive task management checklist with progress tracking*
+*Last Updated: Session 7 - Phase 1 Complete! Phase 2 refined to 7 focused tasks following Simple is Best principle*
