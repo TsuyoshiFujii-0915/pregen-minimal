@@ -1218,12 +1218,12 @@ class PreGenBuilder {
         <div class="card card-left fade-in-card-1">
           ${card1.image ? `<img src="${card1.image}" alt="${card1.title || ''}" class="card-image">` : ''}
           ${card1.title ? `<h3 class="card-title">${card1.title}</h3>` : ''}
-          ${card1.description ? `<p class="card-description">${card1.description}</p>` : ''}
+          ${card1.description || card1.text ? `<p class="card-description">${card1.description || card1.text}</p>` : ''}
         </div>
         <div class="card card-right fade-in-card-2">
           ${card2.image ? `<img src="${card2.image}" alt="${card2.title || ''}" class="card-image">` : ''}
           ${card2.title ? `<h3 class="card-title">${card2.title}</h3>` : ''}
-          ${card2.description ? `<p class="card-description">${card2.description}</p>` : ''}
+          ${card2.description || card2.text ? `<p class="card-description">${card2.description || card2.text}</p>` : ''}
         </div>
       </div>
     </div>`;
@@ -1244,17 +1244,17 @@ class PreGenBuilder {
         <div class="card card-left fade-in-card-1">
           ${card1.image ? `<img src="${card1.image}" alt="${card1.title || ''}" class="card-image">` : ''}
           ${card1.title ? `<h3 class="card-title">${card1.title}</h3>` : ''}
-          ${card1.description ? `<p class="card-description">${card1.description}</p>` : ''}
+          ${card1.description || card1.text ? `<p class="card-description">${card1.description || card1.text}</p>` : ''}
         </div>
         <div class="card card-center fade-in-card-2">
           ${card2.image ? `<img src="${card2.image}" alt="${card2.title || ''}" class="card-image">` : ''}
           ${card2.title ? `<h3 class="card-title">${card2.title}</h3>` : ''}
-          ${card2.description ? `<p class="card-description">${card2.description}</p>` : ''}
+          ${card2.description || card2.text ? `<p class="card-description">${card2.description || card2.text}</p>` : ''}
         </div>
         <div class="card card-right fade-in-card-3">
           ${card3.image ? `<img src="${card3.image}" alt="${card3.title || ''}" class="card-image">` : ''}
           ${card3.title ? `<h3 class="card-title">${card3.title}</h3>` : ''}
-          ${card3.description ? `<p class="card-description">${card3.description}</p>` : ''}
+          ${card3.description || card3.text ? `<p class="card-description">${card3.description || card3.text}</p>` : ''}
         </div>
       </div>
     </div>`;

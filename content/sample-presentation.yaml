@@ -1,6 +1,6 @@
 title: Modern Fashion Trends 2024
 author: Fashion Insights Team
-date: '2024-06-20'
+date: '2024-06-01'
 slides:
   - type: title-slide
     style: black
@@ -9,27 +9,17 @@ slides:
       text: Modern Fashion Trends 2024
     subtitle:
       visible: true
-      text: Exploring the Latest Styles, Colors, and Innovations
-    content:
-      author: Fashion Insights Team
-      date: '2024-06-20'
+      text: Comprehensive Guide to 2024 Styles
   - type: section-break
     style: black
-    title:
-      visible: true
-      text: Section 1
-    subtitle:
-      visible: true
-      text: Key Fashion Elements
-    content: {}
+    content:
+      number: 1
+      title: Key Fashion Elements
   - type: list
     style: white
     title:
       visible: true
       text: Color Palette Revolution
-    subtitle:
-      visible: false
-      text: ''
     content:
       items:
         - 'Warm Earth Tones: Rich browns, terracotta, and sunset oranges'
@@ -41,9 +31,6 @@ slides:
     title:
       visible: true
       text: Essential Accessories
-    subtitle:
-      visible: false
-      text: ''
     content:
       items:
         - 'Statement Hats: Wide-brimmed hats are making a comeback'
@@ -52,115 +39,68 @@ slides:
         - 'Bold Eyewear: Oversized frames and unique shapes'
   - type: section-break
     style: black
-    title:
-      visible: true
-      text: Section 2
-    subtitle:
-      visible: true
-      text: Style Categories
-    content: {}
-  - type: card-3
+    content:
+      number: 2
+      title: Style Categories
+  - type: list
     style: white
     title:
       visible: true
       text: Sustainable Fashion
-    subtitle:
-      visible: false
-      text: ''
     content:
-      cards:
-        - title: Ethical Brands
-          text: >-
-            Companies focusing on fair trade and sustainable materials;
-            consumers choose quality over quantity.
-        - title: Recycled Materials
-          text: >-
-            Innovative textile recycling creating beautiful fabrics from waste
-            materials.
-        - title: Timeless Designs
-          text: Investment pieces that transcend seasonal trends.
+      items:
+        - >-
+          Ethical Brands: Fair trade, sustainable materials, quality over
+          quantity
+        - 'Recycled Materials: Innovative textiles from waste materials'
+        - 'Timeless Designs: Investment pieces that transcend seasonal trends'
   - type: list
     style: white
     title:
       visible: true
       text: Street Style Influence
-    subtitle:
-      visible: false
-      text: ''
     content:
       items:
-        - >-
-          Comfort Meets Style: Athleisure and casual wear elevated with premium
-          materials and thoughtful details
-        - >-
-          Cultural Fusion: Global influences creating unique hybrid styles that
-          celebrate diversity
+        - 'Comfort Meets Style: Athleisure and casual wear with premium details'
+        - 'Cultural Fusion: Hybrid styles blending global influences'
   - type: section-break
     style: black
-    title:
-      visible: true
-      text: Section 3
-    subtitle:
-      visible: true
-      text: Fashion Technology
-    content: {}
+    content:
+      number: 3
+      title: Fashion Technology
   - type: list
     style: white
     title:
       visible: true
       text: Digital Fashion Innovation
-    subtitle:
-      visible: false
-      text: ''
     content:
       items:
-        - >-
-          Virtual Try-On: AR technology allowing customers to see how clothes
-          fit
-        - 'AI Styling: Personalized fashion recommendations based on preferences'
-        - 'Smart Fabrics: Textiles that respond to temperature and movement'
+        - 'Virtual Try-On: AR technology for trying clothes virtually'
+        - 'AI Styling: Personalized recommendations based on preferences'
+        - 'Smart Fabrics: Textiles responding to temperature and movement'
         - '3D Printing: Custom-fit clothing and accessories'
   - type: list
     style: white
     title:
       visible: true
       text: E-commerce Evolution
-    subtitle:
-      visible: false
-      text: ''
     content:
       items:
-        - 'Social Commerce: Instagram and TikTok driving purchase decisions'
+        - 'Social Commerce: Instagram and TikTok driving purchases'
         - 'Subscription Services: Curated fashion boxes and rental programs'
         - 'Augmented Reality: Virtual fitting rooms and style visualization'
-  - type: section-break
-    style: black
+  - type: text-left
+    style: white
     title:
       visible: true
       text: Conclusion
-    subtitle:
-      visible: false
-      text: ''
-    content: {}
-  - type: text-center
-    style: white
-    title:
-      visible: false
-      text: ''
-    subtitle:
-      visible: false
-      text: ''
     content:
       text: >-
-        Fashion in 2024 represents a perfect blend of sustainability,
-        technology, and individual expression. The industry is moving toward
-        more inclusive, environmentally conscious practices while embracing
-        innovation.
-
-
-        The future of fashion lies in personalization, sustainability, and the
-        seamless integration of digital and physical shopping experiences.
-
-
-        Thank you for exploring the exciting world of modern fashion trends with
-        us!
+        Fashion in 2024 blends sustainability, technology, and individual
+        expression. The future lies in personalization, environmental
+        consciousness, and the seamless integration of digital and physical
+        shopping experiences.
+  - type: text-center
+    style: white
+    content:
+      text: Thank you for exploring the exciting world of modern fashion trends!

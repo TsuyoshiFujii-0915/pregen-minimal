@@ -146,6 +146,7 @@ const CONTENT_SCHEMAS = {
       "number": { "type": "string" },
       "title": { "type": "string" }
     },
+    "required": ["number", "title"],
     "additionalProperties": false
   },
   "text-left": {
@@ -306,7 +307,7 @@ Your task is to analyze the input text and create a professional presentation wi
 
 LAYOUT SELECTION RULES:
 - title-slide: Opening slide with title, subtitle, author, date (always use black theme)
-- section-break: Major section dividers with numbers (use black theme) 
+- section-break: Major section dividers with numbers and titles (use black theme) - MUST include content.number and content.title
 - text-left: Standard text content (use white theme)
 - text-center: Quotes, key statements, important messages (use white theme)
 - image-full: Full-screen impact images (any theme)
