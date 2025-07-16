@@ -291,7 +291,7 @@ const CONTENT_SCHEMAS = {
             "title": { "type": "string" },
             "description": { "type": "string" }
           },
-          "required": ["time", "title", "description"]
+          "required": ["title", "description"]
         }
       }
     },
@@ -330,7 +330,7 @@ CONTENT GUIDELINES:
 - Extract key information and organize into logical slides
 - Use clear, concise language
 - Create engaging titles and subtitles
-- For images, use available image files or placeholder filenames like "image1.jpg", "icon1.jpg", etc.
+- For images, use relative paths from project root (e.g., "input/folder/image.jpg", "assets/image.jpg", "sample/images/image.jpg")
 - Only use image layouts if you have specific image content to display
 - Prefer text-based layouts for abstract concepts and explanations
 - Maintain professional presentation flow
@@ -547,7 +547,11 @@ function validateImagePaths(yamlData) {
       if (slide.content[field]) {
         const images = Array.isArray(slide.content[field]) ? slide.content[field] : [slide.content[field]];
         images.forEach(imagePath => {
-          if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('data:')) {
+          // Only warn for suspicious paths, not valid local paths
+          if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('data:') && 
+              !imagePath.startsWith('input/') && !imagePath.startsWith('assets/') && 
+              !imagePath.startsWith('sample/') && !imagePath.startsWith('references/') &&
+              !imagePath.includes('.jpg') && !imagePath.includes('.png') && !imagePath.includes('.webp')) {
             warnings.push(`Slide ${index + 1}: Image path '${imagePath}' may need verification`);
           }
         });
@@ -557,7 +561,11 @@ function validateImagePaths(yamlData) {
     // Check cards for images
     if (slide.content.cards) {
       slide.content.cards.forEach((card, cardIndex) => {
-        if (card.image && !card.image.startsWith('http') && !card.image.startsWith('data:')) {
+        // Only warn for suspicious paths, not valid local paths
+        if (card.image && !card.image.startsWith('http') && !card.image.startsWith('data:') && 
+            !card.image.startsWith('input/') && !card.image.startsWith('assets/') && 
+            !card.image.startsWith('sample/') && !card.image.startsWith('references/') &&
+            !card.image.includes('.jpg') && !card.image.includes('.png') && !card.image.includes('.webp')) {
           warnings.push(`Slide ${index + 1}, Card ${cardIndex + 1}: Image path '${card.image}' may need verification`);
         }
       });

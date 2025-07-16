@@ -454,23 +454,23 @@ const generateYAML = async (inputText, options = {}) => {
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ☐ | AI-01 | JSON Schema Definition | Pending | Comprehensive schema for all 15 layout types |
-| ☐ | AI-02 | OpenAI API Integration | Pending | Implement o4-mini-2025-04-16 API with Structured Outputs (use Context7 for model specs) |
-| ☐ | AI-03 | Schema Validation | Pending | Ensure generated YAML matches specification |
-| ☐ | AI-04 | API Error Handling | Pending | Failure recovery and fallback mechanisms |
+| ✅ | AI-01 | JSON Schema Definition | Pending | Comprehensive schema for all 15 layout types |
+| ✅ | AI-02 | OpenAI API Integration | Pending | Implement o4-mini-2025-04-16 API with Structured Outputs (use Context7 for model specs) |
+| ✅ | AI-03 | Schema Validation | Pending | Ensure generated YAML matches specification |
+| ✅ | AI-04 | API Error Handling | Pending | Failure recovery and fallback mechanisms |
 
 **Phase 2: Document Processing (1-2 hours)**
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ☐ | AI-05 | Document Parsing | Pending | Support txt, md, and plain text input |
-| ☐ | AI-06 | Image Path Validation | Pending | Error handling for invalid/missing image file paths |
+| ✅ | AI-05 | Document Parsing | Pending | Support txt, md, and plain text input |
+| ✅ | AI-06 | Image Path Validation | Pending | Error handling for invalid/missing image file paths |
 
 **Phase 3: AI Prompt System (1-2 hours)**
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ☐ | AI-07 | Master Prompt Design | Pending | System prompt for YAML generation with layout specifications |
+| ✅ | AI-07 | Master Prompt Design | Pending | System prompt for YAML generation with layout specifications |
 
 ### Phase 3: Future Extensions
 

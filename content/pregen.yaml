@@ -1,0 +1,98 @@
+title: PreGen - Minimal
+author: PreGen Team
+date: '2023-10-01'
+slides:
+  - type: title-slide
+    style: black
+    title:
+      visible: true
+      text: PreGen - Minimal
+    subtitle:
+      visible: true
+      text: AI-Driven HTML Presentation Generator
+  - type: text-center
+    style: white
+    content:
+      text: このプロジェクトは、AI時代のプレゼンテーションの可能性を探索する一つの実験です。
+  - type: section-break
+    style: black
+    content:
+      number: 1
+      title: In AI-Agent Era
+  - type: image-text-horizontal
+    style: white
+    title:
+      visible: true
+      text: AI-Agent時代のプレゼンテーション
+    content:
+      image: input/pregen/assets/image_01.png
+      text: AI-Agentによるプレゼンテーション資料の自動作成は、ビジネスのスピードを大きく加速し、ビジネスマンをより本質的な作業へと集中させてくれる、新時代で必要不可欠なビジネスツールです。
+  - type: list
+    style: white
+    title:
+      visible: true
+      text: HTMLによる新しいプレゼンテーションの可能性
+    content:
+      items:
+        - AI-AgentはPowerPointなどのプレゼンテーション形式よりもHTML形式の生成の方が得意ではないか
+        - HTML形式の方が簡便にリッチなアニメーションを実現できるのではないか
+        - HTMLの方が互換性・可搬性に優れるのではないか
+        - AIの進歩によりプレゼンテーションを人間が手直しする工程は必要なくなるのではないか
+  - type: section-break
+    style: black
+    content:
+      number: 2
+      title: PreGen - Minimal
+  - type: image-text-horizontal
+    style: white
+    title:
+      visible: true
+      text: PreGen - Minimalとは
+    content:
+      image: input/pregen/assets/image_02.png
+      text: PreGen - Minimalは、ユーザーが入力したテキストファイルを、シンプルで美しいHTMLのプレゼンテーション資料に変換してくれるシステムです。
+  - type: card-3
+    style: white
+    title:
+      visible: true
+      text: PreGen - Minimalの特徴
+    content:
+      cards:
+        - title: Easy
+          description: >-
+            ユーザーはプレゼンテーションの内容を記載したテキストファイルを配置するだけです。AIに作成させたテキストを入力として用いることも可能です。
+        - title: AI Use
+          description: >-
+            あらかじめ決められたテンプレートから、AIがスライドデザインを自動で作成します。コンセプト検証のため、デザインの自由度はかなり落としています。
+        - title: Minimal Design
+          description: ミニマルで美しいモノクロデザインを採用しています。幅広い場面でのプレゼンテーションで利用できます。
+  - type: timeline
+    style: white
+    title:
+      visible: true
+      text: ワークフロー
+    content:
+      events:
+        - title: Input
+          description: ユーザーがテキストファイルを入力として配置します。
+        - title: YAML
+          description: AIがプレゼンテーションの構成を作成し、YAMLとして出力します。
+        - title: HTML
+          description: YAMLから、アニメーションやデザインを加えたHTMLへと変換します。
+        - title: Presentation
+          description: 生成されたHTMLを使用してプレゼンテーションを行います。
+  - type: list
+    style: white
+    title:
+      visible: true
+      text: どんな人にオススメ？
+    content:
+      items:
+        - オシャレなプレゼン資料は作りたいけど、細かい手直しなんてしたくない
+        - ドキュメンテーションは得意だけどデザインが苦手
+        - とにかく資料作りに振り分ける時間がない
+        - もうすべてをAIにお願いしたい
+  - type: text-center
+    style: white
+    content:
+      text: Thank You!

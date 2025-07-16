@@ -623,13 +623,7 @@ class PreGenBuilder {
   }
 
   async copyAssetsForPresentation(presentationData, assetsDir) {
-    // Copy sample image by default
-    const sampleImageSource = path.join(this.sampleDir, 'images', 'sample_image.jpg');
-    const sampleImageDest = path.join(assetsDir, 'sample.jpg');
-    
-    if (await fs.pathExists(sampleImageSource)) {
-      await fs.copy(sampleImageSource, sampleImageDest);
-    }
+    // No longer automatically copy sample.jpg - only copy explicitly referenced images
     
     // Collect all image references from all slides
     const imageReferences = new Set();
@@ -649,6 +643,25 @@ class PreGenBuilder {
   }
 
   /**
+   * Convert image reference to assets directory path for HTML
+   * @param {string} imageRef - Original image reference from YAML
+   * @returns {string} - Converted assets path for HTML
+   */
+  convertToAssetsPath(imageRef) {
+    if (!imageRef) {
+      return null; // No image specified
+    }
+    
+    if (imageRef === 'assets/sample.jpg') {
+      return 'assets/sample.jpg'; // Keep legacy references
+    }
+    
+    // Convert any image reference to assets path
+    const filename = path.basename(imageRef);
+    return `assets/${filename}`;
+  }
+
+  /**
    * Copy custom image with path resolution and error handling
    * @param {string} imageRef - Image reference from YAML content  
    * @param {string} assetsDir - Destination assets directory
@@ -662,6 +675,10 @@ class PreGenBuilder {
       if (imageRef.startsWith('sample/')) {
         // Sample directory reference (e.g., "sample/images/sample_image.jpg")
         sourcePath = path.join(this.sampleDir, imageRef.substring('sample/'.length));
+        destFilename = path.basename(imageRef);
+      } else if (imageRef.startsWith('input/')) {
+        // Input directory reference (e.g., "input/pregen/assets/image_01.png")
+        sourcePath = path.join(__dirname, imageRef);
         destFilename = path.basename(imageRef);
       } else if (imageRef.startsWith('references/')) {
         // References directory reference (e.g., "references/reference_1.jpg")
@@ -912,8 +929,13 @@ class PreGenBuilder {
 
   generateImageFull(slideData) {
     const style = slideData.style || 'white';
-    const imageUrl = slideData.content?.image || 'assets/sample.jpg';
+    const imageUrl = this.convertToAssetsPath(slideData.content?.image);
     const title = slideData.title?.visible ? slideData.title.text : '';
+    
+    if (!imageUrl) {
+      // No image specified - convert to text slide
+      return this.generateTextCenter({ ...slideData, content: { text: 'No image specified' } });
+    }
     
     return `<div class="slide-container ${style} image-full">
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
@@ -925,8 +947,13 @@ class PreGenBuilder {
 
   generateImageSingle(slideData) {
     const style = slideData.style || 'white';
-    const imageUrl = slideData.content?.image || 'assets/sample.jpg';
+    const imageUrl = this.convertToAssetsPath(slideData.content?.image);
     const title = slideData.title?.visible ? slideData.title.text : '';
+    
+    if (!imageUrl) {
+      // No image specified - convert to text slide
+      return this.generateTextCenter({ ...slideData, content: { text: 'No image specified' } });
+    }
     
     return `<div class="slide-container ${style} image-single">
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
@@ -938,43 +965,43 @@ class PreGenBuilder {
 
   generateImageHorizontal2(slideData) {
     const style = slideData.style || 'white';
-    const image1 = slideData.content?.image1 || 'assets/sample.jpg';
-    const image2 = slideData.content?.image2 || 'assets/sample.jpg';
+    const image1 = slideData.content?.image1 || null;
+    const image2 = slideData.content?.image2 || null;
     const title = slideData.title?.visible ? slideData.title.text : '';
     
     return `<div class="slide-container ${style} image-horizontal-2">
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
       <div class="image-container-left">
-        <img src="${image1}" alt="Image 1" class="horizontal-image fade-in-left">
+        ${image1 ? `<img src="${image1}" alt="Image 1" class="horizontal-image fade-in-left">` : '<div class="image-placeholder">No Image</div>'}
       </div>
       <div class="image-container-right">
-        <img src="${image2}" alt="Image 2" class="horizontal-image fade-in-right">
+        ${image2 ? `<img src="${image2}" alt="Image 2" class="horizontal-image fade-in-right">` : '<div class="image-placeholder">No Image</div>'}
       </div>
     </div>`;
   }
 
   generateImage2x2(slideData) {
     const style = slideData.style || 'white';
-    const image1 = slideData.content?.image1 || 'assets/sample.jpg';
-    const image2 = slideData.content?.image2 || 'assets/sample.jpg';
-    const image3 = slideData.content?.image3 || 'assets/sample.jpg';
-    const image4 = slideData.content?.image4 || 'assets/sample.jpg';
+    const image1 = slideData.content?.image1 || null;
+    const image2 = slideData.content?.image2 || null;
+    const image3 = slideData.content?.image3 || null;
+    const image4 = slideData.content?.image4 || null;
     const title = slideData.title?.visible ? slideData.title.text : '';
     
     return `<div class="slide-container ${style} image-2x2">
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
       <div class="grid-container">
         <div class="grid-item top-left">
-          <img src="${image1}" alt="Image 1" class="grid-image fade-in-1">
+          ${image1 ? `<img src="${image1}" alt="Image 1" class="grid-image fade-in-1">` : '<div class="image-placeholder">No Image</div>'}
         </div>
         <div class="grid-item top-right">
-          <img src="${image2}" alt="Image 2" class="grid-image fade-in-2">
+          ${image2 ? `<img src="${image2}" alt="Image 2" class="grid-image fade-in-2">` : '<div class="image-placeholder">No Image</div>'}
         </div>
         <div class="grid-item bottom-left">
-          <img src="${image3}" alt="Image 3" class="grid-image fade-in-3">
+          ${image3 ? `<img src="${image3}" alt="Image 3" class="grid-image fade-in-3">` : '<div class="image-placeholder">No Image</div>'}
         </div>
         <div class="grid-item bottom-right">
-          <img src="${image4}" alt="Image 4" class="grid-image fade-in-4">
+          ${image4 ? `<img src="${image4}" alt="Image 4" class="grid-image fade-in-4">` : '<div class="image-placeholder">No Image</div>'}
         </div>
       </div>
     </div>`;
@@ -982,9 +1009,14 @@ class PreGenBuilder {
 
   generateImageTextHorizontal(slideData) {
     const style = slideData.style || 'white';
-    const imageUrl = slideData.content?.image || 'assets/sample.jpg';
+    const imageUrl = this.convertToAssetsPath(slideData.content?.image);
     const text = slideData.content?.text || '';
     const title = slideData.title?.visible ? slideData.title.text : '';
+    
+    if (!imageUrl) {
+      // No image specified - convert to text-only slide
+      return this.generateTextLeft({ ...slideData, content: { text } });
+    }
     
     return `<div class="slide-container ${style} image-text-horizontal">
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
@@ -1001,9 +1033,14 @@ class PreGenBuilder {
 
   generateImageTextVertical(slideData) {
     const style = slideData.style || 'white';
-    const imageUrl = slideData.content?.image || 'assets/sample.jpg';
+    const imageUrl = this.convertToAssetsPath(slideData.content?.image);
     const text = slideData.content?.text || '';
     const title = slideData.title?.visible ? slideData.title.text : '';
+    
+    if (!imageUrl) {
+      // No image specified - convert to text-only slide
+      return this.generateTextCenter({ ...slideData, content: { text } });
+    }
     
     return `<div class="slide-container ${style} image-text-vertical">
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
@@ -1216,12 +1253,12 @@ class PreGenBuilder {
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
       <div class="card-container">
         <div class="card card-left fade-in-card-1">
-          ${card1.image ? `<img src="${card1.image}" alt="${card1.title || ''}" class="card-image">` : ''}
+          ${card1.image ? `<img src="${this.convertToAssetsPath(card1.image)}" alt="${card1.title || ''}" class="card-image">` : ''}
           ${card1.title ? `<h3 class="card-title">${card1.title}</h3>` : ''}
           ${card1.description || card1.text ? `<p class="card-description">${card1.description || card1.text}</p>` : ''}
         </div>
         <div class="card card-right fade-in-card-2">
-          ${card2.image ? `<img src="${card2.image}" alt="${card2.title || ''}" class="card-image">` : ''}
+          ${card2.image ? `<img src="${this.convertToAssetsPath(card2.image)}" alt="${card2.title || ''}" class="card-image">` : ''}
           ${card2.title ? `<h3 class="card-title">${card2.title}</h3>` : ''}
           ${card2.description || card2.text ? `<p class="card-description">${card2.description || card2.text}</p>` : ''}
         </div>
@@ -1242,17 +1279,17 @@ class PreGenBuilder {
       ${title ? `<h1 class="slide-title">${title}</h1>` : ''}
       <div class="card-container">
         <div class="card card-left fade-in-card-1">
-          ${card1.image ? `<img src="${card1.image}" alt="${card1.title || ''}" class="card-image">` : ''}
+          ${card1.image ? `<img src="${this.convertToAssetsPath(card1.image)}" alt="${card1.title || ''}" class="card-image">` : ''}
           ${card1.title ? `<h3 class="card-title">${card1.title}</h3>` : ''}
           ${card1.description || card1.text ? `<p class="card-description">${card1.description || card1.text}</p>` : ''}
         </div>
         <div class="card card-center fade-in-card-2">
-          ${card2.image ? `<img src="${card2.image}" alt="${card2.title || ''}" class="card-image">` : ''}
+          ${card2.image ? `<img src="${this.convertToAssetsPath(card2.image)}" alt="${card2.title || ''}" class="card-image">` : ''}
           ${card2.title ? `<h3 class="card-title">${card2.title}</h3>` : ''}
           ${card2.description || card2.text ? `<p class="card-description">${card2.description || card2.text}</p>` : ''}
         </div>
         <div class="card card-right fade-in-card-3">
-          ${card3.image ? `<img src="${card3.image}" alt="${card3.title || ''}" class="card-image">` : ''}
+          ${card3.image ? `<img src="${this.convertToAssetsPath(card3.image)}" alt="${card3.title || ''}" class="card-image">` : ''}
           ${card3.title ? `<h3 class="card-title">${card3.title}</h3>` : ''}
           ${card3.description || card3.text ? `<p class="card-description">${card3.description || card3.text}</p>` : ''}
         </div>
@@ -1270,10 +1307,10 @@ class PreGenBuilder {
       return `
         <div class="timeline-item fade-in-timeline" style="animation-delay: ${delay}s;">
           <div class="timeline-node"></div>
-          <div class="timeline-time">${event.time || ''}</div>
+          <div class="timeline-time">${event.time || event.label || ''}</div>
           <div class="timeline-content">
-            <h4 class="timeline-event-title">${event.title || ''}</h4>
-            <p class="timeline-description">${event.description || ''}</p>
+            <h4 class="timeline-event-title">${event.title || event.label || ''}</h4>
+            <p class="timeline-description">${event.description || event.text || ''}</p>
           </div>
         </div>
       `;

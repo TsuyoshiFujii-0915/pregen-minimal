@@ -14,11 +14,11 @@ slides:
       text: "Complete Layout Demonstration"
     content:
       author:
-        visible: true
-        text: "AI Assistant"
+        visible: false
+        text: ""
       date:
-        visible: true
-        text: "2024-01-15"
+        visible: false
+        text: ""
 
   # 2. Section Break
   - type: "section-break"
