@@ -348,9 +348,10 @@ Generate a complete YAML presentation that transforms the input text into a prof
  * Generate YAML presentation from input text using OpenAI API
  * @param {string} inputText - The text content to convert
  * @param {Object} options - Generation options
+ * @param {Object} projectData - Project data with assets information
  * @returns {Promise<Object>} Generated YAML content and metadata
  */
-async function generateYAML(inputText, options = {}) {
+async function generateYAML(inputText, options = {}, projectData = null) {
   console.log('🤖 Initializing AI YAML Generator...');
   
   try {
@@ -375,14 +376,30 @@ Get your API key from: https://platform.openai.com/api-keys`);
 
     console.log('🔧 Building contextual prompt...');
     
-    const contextualPrompt = `${SYSTEM_PROMPT}
+    // Build project context if available
+    let projectContext = '';
+    if (projectData && projectData.assets && projectData.assets.length > 0) {
+      projectContext = `
+
+PROJECT ASSETS AVAILABLE:
+${projectData.assets.map(asset => `- ${asset}`).join('\n')}
+
+For image layouts (image-full, image-1, image-horizontal-2, image-2x2, image-text-horizontal, image-text-vertical, card-2, card-3), use these exact paths as they appear above.
+`;
+    }
+    
+    const contextualPrompt = `${SYSTEM_PROMPT}${projectContext}
 
 INPUT TEXT TO CONVERT:
 ${inputText}
 
 Generate a professional YAML presentation that transforms this content into an engaging, well-structured presentation. Use appropriate layout types, themes, and ensure smooth content flow.
 
-Focus on creating slides with substantial content rather than over-segmenting into too many thin slides. Each slide should contain meaningful information and maintain good content density.`;
+Focus on creating slides with substantial content rather than over-segmenting into too many thin slides. Each slide should contain meaningful information and maintain good content density.
+
+${projectData && projectData.assets && projectData.assets.length > 0 ? 
+  'IMPORTANT: When using image layouts, reference the exact asset paths listed above. Do not make up image paths.' : 
+  'NOTE: No image assets are available, so avoid using image-based layouts unless absolutely necessary.'}`;
 
     console.log('🚀 Calling OpenAI API with Structured Outputs...');
     
@@ -419,9 +436,8 @@ Focus on creating slides with substantial content rather than over-segmenting in
       noRefs: true 
     });
 
-    // Generate filename
-    const timestamp = Date.now();
-    const filename = options.output || `generated-${timestamp}.yaml`;
+    // Generate filename based on project name or custom output
+    const filename = options.output || `${options.projectName}.yaml`;
     const fullPath = path.join('content', filename);
 
     // Ensure content directory exists
@@ -512,21 +528,105 @@ function validateYAMLStructure(data) {
 }
 
 /**
- * Parse document input (txt, md, plain text)
- * @param {string} inputPath - Path to input document
- * @returns {Promise<string>} Parsed text content
+ * Load project data from input directory
+ * @param {string} projectName - Project directory name
+ * @returns {Promise<Object>} Project data with document content and assets
  */
-async function parseDocument(inputPath) {
-  console.log(`📄 Parsing document: ${inputPath}`);
+async function loadProjectData(projectName) {
+  console.log(`📁 Loading project: ${projectName}`);
+  
+  const projectPath = path.join('input', projectName);
   
   try {
-    const content = await fs.readFile(inputPath, 'utf8');
-    const ext = path.extname(inputPath).toLowerCase();
-    
-    // Return raw content - let OpenAI handle all parsing and structure
-    return content.trim();
+    // Check if project directory exists
+    const stats = await fs.stat(projectPath);
+    if (!stats.isDirectory()) {
+      throw new Error(`Project path '${projectPath}' is not a directory`);
+    }
   } catch (error) {
-    throw new Error(`Failed to parse document: ${error.message}`);
+    if (error.code === 'ENOENT') {
+      throw new Error(`Project directory '${projectPath}' does not exist`);
+    }
+    throw error;
+  }
+  
+  // Find document file in project directory
+  const documentFile = await findDocumentFile(projectPath);
+  console.log(`📄 Found document: ${documentFile}`);
+  
+  // Read document content
+  const content = await fs.readFile(documentFile, 'utf8');
+  
+  // Scan assets directory if it exists
+  const assetsPath = path.join(projectPath, 'assets');
+  const assets = await scanAssetsDirectory(assetsPath);
+  
+  return {
+    name: projectName,
+    documentPath: documentFile,
+    document: content.trim(),
+    assets: assets,
+    assetsPath: assetsPath
+  };
+}
+
+/**
+ * Find document file in project directory
+ * @param {string} projectPath - Path to project directory
+ * @returns {Promise<string>} Path to document file
+ */
+async function findDocumentFile(projectPath) {
+  try {
+    const files = await fs.readdir(projectPath);
+    
+    // Priority order: .md files first, then .txt files
+    const mdFiles = files.filter(file => file.endsWith('.md'));
+    const txtFiles = files.filter(file => file.endsWith('.txt'));
+    
+    if (mdFiles.length > 0) {
+      return path.join(projectPath, mdFiles[0]);
+    }
+    
+    if (txtFiles.length > 0) {
+      return path.join(projectPath, txtFiles[0]);
+    }
+    
+    throw new Error(`No document file found in ${projectPath}. Expected .md or .txt file.`);
+  } catch (error) {
+    throw new Error(`Failed to find document file: ${error.message}`);
+  }
+}
+
+/**
+ * Scan assets directory for images and resources
+ * @param {string} assetsPath - Path to assets directory
+ * @returns {Promise<Array>} Array of asset filenames with relative paths
+ */
+async function scanAssetsDirectory(assetsPath) {
+  try {
+    const stats = await fs.stat(assetsPath);
+    if (!stats.isDirectory()) {
+      return [];
+    }
+    
+    const files = await fs.readdir(assetsPath);
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    
+    const assets = files
+      .filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return imageExtensions.includes(ext);
+      })
+      .map(file => path.join(assetsPath, file));
+    
+    console.log(`🖼️  Found ${assets.length} asset(s): ${assets.map(a => path.basename(a)).join(', ')}`);
+    return assets;
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.log(`📁 No assets directory found at ${assetsPath}`);
+      return [];
+    }
+    throw new Error(`Failed to scan assets directory: ${error.message}`);
   }
 }
 
@@ -586,18 +686,30 @@ async function main() {
 AI-Powered YAML Generation System
 
 Usage:
-  node ai-generator.js --input <file> [--output <filename>] [--auto-build]
+  node ai-generator.js --input <project> [--output <filename>] [--auto-build]
 
 Options:
-  --input <file>      Input document (txt, md, or plain text)
-  --output <filename> Output YAML filename (default: generated-<timestamp>.yaml)
+  --input <project>   Project directory name in input/ folder (e.g., 'pregen', 'sample-presentation')
+  --output <filename> Output YAML filename (default: <project>.yaml)
   --auto-build        Automatically build presentation after generation
   --help, -h          Show this help message
 
 Examples:
-  node ai-generator.js --input document.txt --output presentation.yaml
-  node ai-generator.js --input document.md --auto-build
-  node ai-generator.js --input notes.txt --output slides.yaml --auto-build
+  node ai-generator.js --input pregen --auto-build
+  node ai-generator.js --input sample-presentation --output custom-name.yaml
+  node ai-generator.js --input pregen --output slides.yaml --auto-build
+
+Project Structure:
+  input/
+  ├── pregen/
+  │   ├── pregen.md        # Source document (auto-detected)
+  │   └── assets/          # Images and resources
+  │       ├── image_01.png
+  │       └── image_02.png
+  └── sample-presentation/
+      ├── sample-presentation.md
+      └── assets/
+          └── sample_image.jpg
 
 Environment Variables:
   OPENAI_API_KEY      OpenAI API key (required)
@@ -634,11 +746,14 @@ Setup:
   }
 
   try {
-    // Parse input document
-    const inputText = await parseDocument(options.input);
+    // Load project data
+    const projectData = await loadProjectData(options.input);
     
-    // Generate YAML
-    const result = await generateYAML(inputText, options);
+    // Add project name to options for filename generation
+    options.projectName = projectData.name;
+    
+    // Generate YAML with project context
+    const result = await generateYAML(projectData.document, options, projectData);
     
     // Validate image paths
     const imageWarnings = validateImagePaths(result.generatedData);
@@ -671,7 +786,9 @@ if (require.main === module) {
 module.exports = {
   generateYAML,
   validateYAMLStructure,
-  parseDocument,
+  loadProjectData,
+  findDocumentFile,
+  scanAssetsDirectory,
   validateImagePaths,
   YAML_SCHEMA,
   CONTENT_SCHEMAS

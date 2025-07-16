@@ -185,33 +185,56 @@ slides:
 5. **CSS/JS Embedding**: All styles and scripts embedded in HTML (build.js)
 6. **Responsive Optimization**: Automatic screen size detection and scaling (build.js)
 
-**AI Generation Workflow** (separate process):
-1. **Document Input**: User provides text/markdown documents
-2. **AI Processing**: OpenAI o4-mini-2025-04-16 API with Structured Outputs generates YAML (ai-generator.js)
-3. **YAML Output**: Generated files saved to content/ directory
-4. **Build Integration**: Existing build.js processes the generated YAML files
+**AI Generation Workflow** (project-based processing):
+1. **Project Input**: User specifies input project directory (e.g., `pregen`)
+2. **Document Detection**: Auto-detect .md files in `input/{project}/` directory
+3. **Asset Discovery**: Scan `input/{project}/assets/` for images and resources
+4. **AI Processing**: OpenAI o4-mini-2025-04-16 API with Structured Outputs generates YAML (ai-generator.js)
+5. **YAML Output**: Generated files saved to `content/{project}.yaml`
+6. **Build Integration**: Existing build.js processes the generated YAML files
+
+**Agentic Error Recovery Workflow** (automated quality assurance):
+1. **Initial Generation**: AI generates YAML from project input with asset context
+2. **Validation Check**: build.js validates generated YAML against schema
+3. **Error Detection**: If validation fails, capture detailed error messages
+4. **User Confirmation**: Prompt user for retry permission (Y/n) with error details
+5. **Enhanced Retry**: Re-submit to AI with original prompt + error context + asset info
+6. **Success/Limit**: Complete on success or after maximum retry attempts (3x)
+7. **Fallback**: On persistent failure, provide manual editing guidance
 
 **Note**: o4-mini-2025-04-16 is the latest OpenAI reasoning model with enhanced performance and Structured Outputs support. Use Context7 for accessing the most current model specifications and features.
 
 ### File Structure
 ```
+input/                    # Input project directories
+├── pregen/
+│   ├── pregen.md        # Source document (auto-detected)
+│   └── assets/          # Project images and resources
+│       ├── image_01.png
+│       └── image_02.png
+├── sample-presentation/
+│   ├── sample-presentation.md  # Source document
+│   └── assets/
+│       └── sample_image.jpg
+└── ...
+
 content/
-├── presentation1.yaml    # Multi-slide presentation
-├── presentation2.yaml    # Multi-slide presentation  
-├── generated-*.yaml      # AI-generated YAML files (future)
+├── pregen.yaml          # AI-generated YAML from input/pregen/
+├── sample-presentation.yaml  # AI-generated YAML
+├── generated-*.yaml     # Timestamped AI-generated files
 └── ...
 
 presentations/
-├── presentation1/
-│   ├── index.html        # Complete presentation
-│   └── assets/           # Images and resources
-├── presentation2/
+├── pregen/
+│   ├── index.html       # Built presentation
+│   └── assets/          # Copied and optimized assets
+├── sample-presentation/
 │   ├── index.html
 │   └── assets/
 └── ...
 
-ai-generator.js           # Standalone AI YAML generator (future)
-build.js                  # Core presentation builder
+ai-generator.js          # Standalone AI YAML generator
+build.js                 # Core presentation builder
 ```
 
 ### Commands
@@ -219,9 +242,13 @@ build.js                  # Core presentation builder
 # Build all presentations
 node build.js
 
-# Generate YAML from text documents (future feature)
-node ai-generator.js --input document.txt --output presentation.yaml
-node ai-generator.js --input document.md --auto-build
+# Generate YAML from input projects (directory-based workflow)
+node ai-generator.js --input pregen --auto-build
+node ai-generator.js --input sample-presentation --output custom-name.yaml
+
+# Generate with automatic error recovery (agentic workflow)
+node ai-generator.js --input pregen --auto-build --retry-on-error
+npm run generate-and-build pregen  # Integrated command
 
 # Preview presentations
 npm run preview
@@ -278,9 +305,10 @@ npm run preview
 // Standalone AI Generator (separate from build.js)
 // File: ai-generator.js
 
-const generateYAML = async (inputText, options = {}) => {
+const generateYAML = async (projectName, options = {}) => {
+  const projectData = await loadProjectData(projectName);
   const schema = getYAMLSchema();
-  const prompt = buildContextualPrompt(inputText, options);
+  const prompt = buildProjectPrompt(projectData, options);
   
   const response = await openai.chat.completions.create({
     model: "o4-mini-2025-04-16",  // Latest reasoning model with Structured Outputs support
@@ -294,7 +322,7 @@ const generateYAML = async (inputText, options = {}) => {
   const yamlContent = validateAndCleanYAML(response.choices[0].message.content);
   
   // Save generated YAML to content directory
-  const filename = `generated-${Date.now()}.yaml`;
+  const filename = `${projectName}.yaml`;
   await fs.writeFile(`content/${filename}`, yamlContent);
   
   // Optionally trigger build process
@@ -305,8 +333,20 @@ const generateYAML = async (inputText, options = {}) => {
   return { filename, yamlContent };
 };
 
+const loadProjectData = async (projectName) => {
+  const projectPath = `input/${projectName}`;
+  const documentFile = await findDocumentFile(projectPath);
+  const assets = await scanAssetsDirectory(`${projectPath}/assets`);
+  
+  return {
+    name: projectName,
+    document: await fs.readFile(documentFile, 'utf8'),
+    assets: assets.map(asset => `input/${projectName}/assets/${asset}`)
+  };
+};
+
 // Usage:
-// node ai-generator.js --input document.txt --output presentation.yaml
+// node ai-generator.js --input pregen --auto-build
 ```
 
 **JSON Schema Structure**:
@@ -398,12 +438,13 @@ const generateYAML = async (inputText, options = {}) => {
 - ✅ **Error Handling**: Complete (comprehensive validation, system checks, recovery)
 - ✅ **YAML Validation**: Complete (JSON schema, type checking, helpful messages)
 - 🚀 **AI-Powered YAML Generation**: Not implemented (critical priority - UX revolution)
+- 🔄 **Agentic Error Recovery**: Not started (critical priority - automated quality assurance)
 - 📋 **Future Layouts**: Not started (planned for future iterations)
 
 ## Project Maturity
 **Current State**: Production-ready presentation system with all core features  
-**Next Phase**: UX Revolution - AI-powered YAML generation for seamless user experience  
-**Short-term**: Asset management, validation, and error handling improvements  
+**Next Phase**: UX Revolution - AI-powered YAML generation with agentic error recovery for seamless user experience  
+**Short-term**: AI generation reliability through automated error detection and retry workflows  
 **Long-term**: Layout extensions and advanced features
 
 ---
@@ -463,18 +504,34 @@ const generateYAML = async (inputText, options = {}) => {
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ✅ | AI-05 | Document Parsing | Pending | Support txt, md, and plain text input |
-| ✅ | AI-06 | Image Path Validation | Pending | Error handling for invalid/missing image file paths |
+| ✅ | AI-05 | Project Directory Processing | Pending | Auto-detect .md files in input/{project}/ directories |
+| ✅ | AI-06 | Asset Discovery & Path Resolution | Pending | Scan assets/ subdirectories and resolve image paths |
 
 **Phase 3: AI Prompt System (1-2 hours)**
 
 | ✓ | Task ID | Task Name | Status | Description |
 |---|---------|-----------|--------|-------------|
-| ✅ | AI-07 | Master Prompt Design | Pending | System prompt for YAML generation with layout specifications |
+| ✅ | AI-07 | Master Prompt Design | Pending | System prompt for YAML generation with project context and asset awareness |
 
-### Phase 3: Future Extensions
+### Phase 3: Agentic Error Recovery System
 
-#### 5. Advanced Layout Types
+#### 3. Agentic Error Recovery & Retry System 🔄
+**Priority**: Critical | **Estimated Time**: 2-3 hours
+
+| ✓ | Task ID | Task Name | Status | Description |
+|---|---------|-----------|--------|-------------|
+| ☐ | AGENTIC-01 | Error Detection Integration | Pending | Integrate build.js validation into ai-generator.js workflow |
+| ☐ | AGENTIC-02 | Error Message Formatting | Pending | Format validation errors for AI consumption |
+| ☐ | AGENTIC-03 | User Interaction System | Pending | Implement readline-based Y/n prompts |
+| ☐ | AGENTIC-04 | Enhanced Retry Logic | Pending | Append errors to prompt and implement retry counter |
+| ☐ | AGENTIC-05 | API Rate Limiting | Pending | Add exponential backoff for API calls |
+| ☐ | AGENTIC-06 | CLI Flag Integration | Pending | Add --retry-on-error flag to ai-generator.js |
+| ☐ | AGENTIC-07 | NPM Script Creation | Pending | Create npm run generate-and-build {project} script |
+| ☐ | AGENTIC-08 | Error Scenario Testing | Pending | Test with known validation failures |
+
+### Phase 4: Future Extensions
+
+#### 4. Advanced Layout Types
 **Priority**: Medium | **Estimated Time**: 6-8 hours
 
 | ✓ | Task ID | Task Name | Status | Description |
@@ -500,8 +557,9 @@ const generateYAML = async (inputText, options = {}) => {
 
 ### 🚀 Next Phase Ready
 - **Total Completed Tasks**: 13/13 Phase 1 tasks (100% complete)
-- **Next Priority**: AI-Powered YAML Generation System (7 tasks)
+- **Next Priority**: AI-Powered YAML Generation System (7 tasks) + Agentic Error Recovery (8 tasks)
 - **Estimated Time for Phase 2**: 4-7 hours
+- **Estimated Time for Phase 3**: 2-3 hours
 
 ### 📋 Task Status Legend
 - **☐**: Not started
@@ -511,4 +569,4 @@ const generateYAML = async (inputText, options = {}) => {
 
 ---
 
-*Last Updated: Session 7 - Phase 1 Complete! Phase 2 refined to 7 focused tasks following Simple is Best principle*
+*Last Updated: Session 8 - Phase 3 refined for project-based workflow! Directory-centric processing with automatic asset discovery*

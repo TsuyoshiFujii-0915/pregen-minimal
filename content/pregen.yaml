@@ -1,6 +1,6 @@
 title: PreGen - Minimal
 author: PreGen Team
-date: '2023-10-01'
+date: '2024-06-01'
 slides:
   - type: title-slide
     style: black
@@ -10,28 +10,50 @@ slides:
     subtitle:
       visible: true
       text: AI-Driven HTML Presentation Generator
+    content:
+      author: PreGen Team
+      date: '2024-06-01'
   - type: text-center
     style: white
+    title:
+      visible: false
+      text: ''
+    subtitle:
+      visible: false
+      text: ''
     content:
       text: このプロジェクトは、AI時代のプレゼンテーションの可能性を探索する一つの実験です。
   - type: section-break
     style: black
+    title:
+      visible: false
+      text: ''
+    subtitle:
+      visible: false
+      text: ''
     content:
-      number: 1
+      number: '1'
       title: In AI-Agent Era
   - type: image-text-horizontal
     style: white
     title:
       visible: true
       text: AI-Agent時代のプレゼンテーション
+    subtitle:
+      visible: false
+      text: ''
     content:
       image: input/pregen/assets/image_01.png
-      text: AI-Agentによるプレゼンテーション資料の自動作成は、ビジネスのスピードを大きく加速し、ビジネスマンをより本質的な作業へと集中させてくれる、新時代で必要不可欠なビジネスツールです。
+      text: >-
+        AI-Agentによるプレゼンテーション資料の自動作成は、ビジネスのスピードを大きく加速し、ビジネスマンをより本質的な作業へと集中させてくれる、新時代で必要不可欠なビジネスツールです。
   - type: list
     style: white
     title:
       visible: true
       text: HTMLによる新しいプレゼンテーションの可能性
+    subtitle:
+      visible: false
+      text: ''
     content:
       items:
         - AI-AgentはPowerPointなどのプレゼンテーション形式よりもHTML形式の生成の方が得意ではないか
@@ -40,52 +62,70 @@ slides:
         - AIの進歩によりプレゼンテーションを人間が手直しする工程は必要なくなるのではないか
   - type: section-break
     style: black
+    title:
+      visible: false
+      text: ''
+    subtitle:
+      visible: false
+      text: ''
     content:
-      number: 2
+      number: '2'
       title: PreGen - Minimal
   - type: image-text-horizontal
     style: white
     title:
       visible: true
       text: PreGen - Minimalとは
+    subtitle:
+      visible: false
+      text: ''
     content:
       image: input/pregen/assets/image_02.png
-      text: PreGen - Minimalは、ユーザーが入力したテキストファイルを、シンプルで美しいHTMLのプレゼンテーション資料に変換してくれるシステムです。
+      text: >-
+        PreGen -
+        Minimalは、ユーザーが入力したテキストファイルを、シンプルで美しいHTMLのプレゼンテーション資料に変換してくれるシステムです。
   - type: card-3
     style: white
     title:
       visible: true
       text: PreGen - Minimalの特徴
+    subtitle:
+      visible: false
+      text: ''
     content:
       cards:
         - title: Easy
-          description: >-
-            ユーザーはプレゼンテーションの内容を記載したテキストファイルを配置するだけです。AIに作成させたテキストを入力として用いることも可能です。
+          description: ユーザーはプレゼンテーションの内容を記載したテキストファイルを配置するだけ。AIが作成したテキストもそのまま利用可能。
         - title: AI Use
-          description: >-
-            あらかじめ決められたテンプレートから、AIがスライドデザインを自動で作成します。コンセプト検証のため、デザインの自由度はかなり落としています。
+          description: あらかじめ決められたテンプレートからAIがスライドデザインを自動生成。デザインの自由度は抑え、コンセプト検証に最適。
         - title: Minimal Design
-          description: ミニマルで美しいモノクロデザインを採用しています。幅広い場面でのプレゼンテーションで利用できます。
+          description: ミニマルで美しいモノクロデザインを採用。幅広い場面に対応するシンプルなプレゼン資料。
   - type: timeline
     style: white
     title:
       visible: true
       text: ワークフロー
+    subtitle:
+      visible: false
+      text: ''
     content:
       events:
         - title: Input
-          description: ユーザーがテキストファイルを入力として配置します。
+          description: ユーザーがテキストファイルを入力として配置
         - title: YAML
-          description: AIがプレゼンテーションの構成を作成し、YAMLとして出力します。
+          description: AIがプレゼン構成を作成し、YAMLを出力
         - title: HTML
-          description: YAMLから、アニメーションやデザインを加えたHTMLへと変換します。
+          description: YAMLからアニメーションやデザインを加えたHTMLを生成
         - title: Presentation
-          description: 生成されたHTMLを使用してプレゼンテーションを行います。
+          description: 生成されたHTMLを使用してプレゼンテーション実施
   - type: list
     style: white
     title:
       visible: true
       text: どんな人にオススメ？
+    subtitle:
+      visible: false
+      text: ''
     content:
       items:
         - オシャレなプレゼン資料は作りたいけど、細かい手直しなんてしたくない
@@ -94,5 +134,11 @@ slides:
         - もうすべてをAIにお願いしたい
   - type: text-center
     style: white
+    title:
+      visible: false
+      text: ''
+    subtitle:
+      visible: false
+      text: ''
     content:
       text: Thank You!
