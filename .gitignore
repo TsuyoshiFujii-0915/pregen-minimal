@@ -14,7 +14,6 @@ node_modules
 # Documentation & References
 # ===========================================
 docs
-presentations
 references
 sample
 CLAUDE_JP.md
@@ -33,3 +32,6 @@ CLAUDE_JP.md
 *.ico
 *.tiff
 *.tif
+
+!input/pregen/assets/image_01.png
+!input/pregen/assets/image_02.png
