@@ -1,6 +1,6 @@
 title: PreGen - Minimal
 author: PreGen Team
-date: '2024-06-01'
+date: '2023-10-01'
 slides:
   - type: title-slide
     style: black
@@ -10,9 +10,7 @@ slides:
     subtitle:
       visible: true
       text: AI-Driven HTML Presentation Generator
-    content:
-      author: PreGen Team
-      date: '2024-06-01'
+    content: {}
   - type: text-center
     style: white
     title:
@@ -32,7 +30,7 @@ slides:
       visible: false
       text: ''
     content:
-      number: '1'
+      number: '01'
       title: In AI-Agent Era
   - type: image-text-horizontal
     style: white
@@ -69,7 +67,7 @@ slides:
       visible: false
       text: ''
     content:
-      number: '2'
+      number: '02'
       title: PreGen - Minimal
   - type: image-text-horizontal
     style: white
@@ -95,11 +93,13 @@ slides:
     content:
       cards:
         - title: Easy
-          description: ユーザーはプレゼンテーションの内容を記載したテキストファイルを配置するだけ。AIが作成したテキストもそのまま利用可能。
+          text: >-
+            ユーザーはプレゼンテーションの内容を記載したテキストファイルを配置するだけです。AIに作成させたテキストを入力として用いることも可能です。
         - title: AI Use
-          description: あらかじめ決められたテンプレートからAIがスライドデザインを自動生成。デザインの自由度は抑え、コンセプト検証に最適。
+          text: >-
+            あらかじめ決められたテンプレートから、AIがスライドデザインを自動で作成します。コンセプト検証のため、デザインの自由度はかなり落としています。
         - title: Minimal Design
-          description: ミニマルで美しいモノクロデザインを採用。幅広い場面に対応するシンプルなプレゼン資料。
+          text: ミニマルで美しいモノクロデザインを採用しています。幅広い場面でのプレゼンテーションで利用できます。
   - type: timeline
     style: white
     title:
@@ -111,13 +111,13 @@ slides:
     content:
       events:
         - title: Input
-          description: ユーザーがテキストファイルを入力として配置
+          description: ユーザーがテキストファイルを入力として配置します。
         - title: YAML
-          description: AIがプレゼン構成を作成し、YAMLを出力
+          description: AIがプレゼンテーションの構成を作成し、YAMLとして出力します。
         - title: HTML
-          description: YAMLからアニメーションやデザインを加えたHTMLを生成
+          description: YAMLから、アニメーションやデザインを加えたHTMLへと変換します。
         - title: Presentation
-          description: 生成されたHTMLを使用してプレゼンテーション実施
+          description: 生成されたHTMLを使用してプレゼンテーションを行います。
   - type: list
     style: white
     title:
