@@ -17,6 +17,22 @@ A modern web-based presentation system that converts YAML input files into beaut
 npm install
 ```
 
+## Setup
+
+### OpenAI API Configuration (for AI Generation)
+
+1. Create a `.env` file in the project root:
+   ```bash
+   cp .env.sample .env
+   ```
+
+2. Add your OpenAI API key to the `.env` file:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+Note: AI generation features require a valid OpenAI API key. Manual YAML creation and building work without an API key.
+
 ## Usage
 
 ### Manual YAML Creation
@@ -188,6 +204,24 @@ npm run generate-and-build project-name
 
 # Preview presentations
 npm run preview
+
+# Open specific presentation directly
+open presentations/project-name/index.html
+```
+
+### Opening Presentations
+
+After building presentations, you can open them directly in your browser:
+
+```bash
+# Open specific presentation
+open presentations/pregen/index.html
+
+# On Linux/WSL
+xdg-open presentations/pregen/index.html
+
+# On Windows
+start presentations/pregen/index.html
 ```
 
 ## System Requirements
